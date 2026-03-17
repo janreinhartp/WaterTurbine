@@ -1,0 +1,10 @@
+SET(SOURCES ui_MainMenu.c
+    ui_Gauges.c
+    ui_Data.c
+    ui_Settings.c
+    ui.c
+    ui_comp_hook.c
+    ui_helpers.c
+    ui_img_1396634952.c)
+
+add_library(ui ${SOURCES})

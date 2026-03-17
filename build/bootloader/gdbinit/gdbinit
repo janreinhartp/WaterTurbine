@@ -1,0 +1,2 @@
+source C:/ESP PROJECTS/WaterTurbine/build/bootloader/gdbinit/symbols
+source C:/ESP PROJECTS/WaterTurbine/build/bootloader/gdbinit/connect
