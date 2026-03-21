@@ -1,0 +1,187 @@
+# WaterTurbine
+
+Real-time water turbine monitoring system built on the **ESP32-P4** with a 9" touch display, live sensor data, and SD card logging.
+
+## Features
+
+- **Live Dashboard** — 5 arc gauges (Voltage, Ampere, RPM, Power, Flow Rate) updated every 1 second
+- **Data Charts** — Rolling 20-point line chart with Flow Rate, Voltage, and Ampere series
+- **Real Sensors** — ADS1115 16-bit ADC for voltage/current, hardware pulse counters for flow and RPM
+- **2-Point Calibration** — Linear calibration for voltage and ampere channels
+- **RTC Clock** — DS3231 real-time clock with battery backup
+- **SD Card Logging** — CSV data logged every 60 seconds with timestamped rows
+- **Touch UI** — 4 screens (Main Menu, Gauges, Data, Settings) with LVGL 9.2.2
+
+## Hardware
+
+| Component | Connection | Details |
+|---|---|---|
+| **Display** | MIPI DSI | 1024x600 IPS (EK79007), backlight on GPIO31 |
+| **Touch** | I2C (0x5D) | GT911 capacitive, RST=GPIO40, INT=GPIO42 |
+| **ADS1115 ADC** | I2C (0x48) | 16-bit, voltage on AIN0, current on AIN1 |
+| **DS3231 RTC** | I2C (0x68) | Battery-backed clock + temperature sensor |
+| **YF-DN50 Flow Sensor** | GPIO4 | Pulse output, 3.5 Hz per L/min (default) |
+| **Hall Effect RPM Sensor** | GPIO5 | 1 pulse per revolution (default) |
+| **SD Card** | SDIO 1-wire | CLK=GPIO43, CMD=GPIO44, D0=GPIO39 |
+| **Status LED** | GPIO48 | General purpose output |
+
+### I2C Bus
+
+- SDA: GPIO45
+- SCL: GPIO46
+- Speed: 400 kHz
+- Shared by: GT911 touch (0x5D), ADS1115 (0x48), DS3231 (0x68)
+
+## Project Structure
+
+```
+WaterTurbine/
+├── main/
+│   ├── main.c                  # App entry point and hardware init
+│   ├── gauges_controller.c     # 1-second UI update task
+│   ├── sensor.c                # ADS1115 voltage/ampere with calibration
+│   ├── pulse_controller.c      # Flow rate and RPM from PCNT
+│   ├── data_logger.c           # CSV logging to SD card (60s interval)
+│   ├── include/
+│   │   ├── main.h
+│   │   ├── gauges_controller.h
+│   │   ├── sensor.h
+│   │   ├── pulse_controller.h
+│   │   └── data_logger.h
+│   └── ui/                     # SquareLine Studio generated LVGL screens
+│       ├── ui.c / ui.h
+│       ├── ui_MainMenu.c
+│       ├── ui_Gauges.c
+│       ├── ui_Data.c
+│       └── ui_Settings.c
+├── peripheral/
+│   ├── bsp_i2c/                # I2C master bus driver
+│   ├── bsp_display/            # GT911 touch driver
+│   ├── bsp_illuminate/         # Display (MIPI DSI + LVGL) and backlight
+│   ├── bsp_extra/              # GPIO48 LED control
+│   ├── bsp_ads1115/            # ADS1115 16-bit ADC driver
+│   ├── bsp_pcnt/               # Hardware pulse counter wrapper
+│   ├── bsp_ds3231/             # DS3231 RTC driver
+│   └── bsp_sd/                 # SD card (FAT32) driver
+├── documentation/
+│   ├── IMPLEMENTED_ITEMS.md    # Detailed implementation reference
+│   ├── USAGE_GUIDE.md          # Build, flash, and usage instructions
+│   └── LVGL_ELEMENTS.md        # LVGL widget inventory and examples
+├── CMakeLists.txt              # Root build configuration
+├── partitions.csv              # Partition table (factory + OTA)
+└── sdkconfig                   # ESP-IDF project configuration
+```
+
+## Getting Started
+
+### Prerequisites
+
+- [ESP-IDF v5.4.3](https://docs.espressif.com/projects/esp-idf/en/v5.4.3/esp32p4/get-started/index.html) installed and configured
+- ESP32-P4 board connected via USB
+- FAT32-formatted SD card inserted
+
+### Build and Flash
+
+**VS Code (recommended):**
+
+1. Open project in VS Code with ESP-IDF extension
+2. `ESP-IDF: Set Espressif Device Target` → esp32p4
+3. `ESP-IDF: Build your project`
+4. `ESP-IDF: Flash your project`
+5. `ESP-IDF: Monitor your device`
+
+**Terminal:**
+
+```bash
+idf.py set-target esp32p4
+idf.py build
+idf.py -p <PORT> flash monitor
+```
+
+## Boot Sequence
+
+The firmware initializes hardware in this order:
+
+1. LDO regulators (LDO3=2.5V, LDO4=3.3V)
+2. I2C master bus (GPIO45/46, 400kHz)
+3. GT911 touch panel
+4. LCD display + LVGL port
+5. LCD backlight (100% brightness)
+6. GPIO48 LED (off)
+7. ADS1115 sensor subsystem + default calibration
+8. Pulse controller (flow=GPIO4, RPM=GPIO5)
+9. DS3231 RTC
+10. SD card mount
+11. UI initialization
+12. Gauges controller task (1-second loop)
+13. Data logger task (60-second CSV logging)
+
+If any step fails, the firmware halts and logs the failing module name in a loop.
+
+## CSV Data Logging
+
+The data logger writes to `/sdcard/datalog.csv` every 60 seconds:
+
+```csv
+Time,Flow Rate,RPM,Voltage,Ampere,Power
+21-Mar-2026 14-35,5.300,850.000,24.500,5.100,124.950
+21-Mar-2026 14-36,5.280,848.000,24.480,5.090,124.604
+```
+
+- **Time format:** `d-mmm-yyyy h-mm`
+- **All values:** 3 decimal places
+- **Power:** computed as Voltage × Ampere
+- Header row is written automatically when a new file is created
+
+## Calibration
+
+### Voltage and Ampere (2-Point Linear)
+
+Default calibration is set in `main.c` during startup:
+
+```c
+// Voltage: 0V ADC → 0V actual, 4.0V ADC → 30.0V actual
+sensor_cal_t voltage_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
+                             .raw2 = 4.0f, .actual2 = 30.0f };
+sensor_set_voltage_cal(&voltage_cal);
+
+// Ampere: 0V ADC → 0A actual, 4.0V ADC → 20.0A actual
+sensor_cal_t ampere_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
+                            .raw2 = 4.0f, .actual2 = 20.0f };
+sensor_set_ampere_cal(&ampere_cal);
+```
+
+Adjust the `raw`/`actual` pairs to match your voltage divider and current sensor.
+
+### Flow Rate and RPM
+
+- **YF-DN50 flow factor:** Default 3.5 Hz per L/min — adjust with `pulse_controller_set_flow_factor()`
+- **RPM pulses per revolution:** Default 1.0 — adjust with `pulse_controller_set_rpm_ppr()`
+
+## Dependencies
+
+Managed via `idf_component.yml`:
+
+| Component | Version |
+|---|---|
+| espressif/esp_lcd_ek79007 | ^1.0.2 |
+| espressif/esp_lvgl_port | ^2.6.0 |
+| espressif/esp_lcd_touch_gt911 | ^1.1.3 |
+| lvgl/lvgl | 9.2.2 |
+
+## Not Yet Implemented
+
+- RTC time display on the UI
+- CSV log file rotation / size management
+- Calibration and settings persistence (NVS)
+- Settings screen NEXT/BACK workflow
+- Wi-Fi / Bluetooth connectivity
+- OTA firmware updates (partition table ready)
+
+## Documentation
+
+See the [documentation/](documentation/) folder for detailed reference:
+
+- [IMPLEMENTED_ITEMS.md](documentation/IMPLEMENTED_ITEMS.md) — Complete implementation inventory
+- [USAGE_GUIDE.md](documentation/USAGE_GUIDE.md) — Build, flash, and extension guide
+- [LVGL_ELEMENTS.md](documentation/LVGL_ELEMENTS.md) — LVGL widget reference and examples
