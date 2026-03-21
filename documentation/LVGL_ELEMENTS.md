@@ -67,7 +67,7 @@ lv_label_set_text(ui_gPowerValue, "126 W");
 
 Chart elements:
 
-- `ui_Chart1` (bar chart)
+- `ui_Chart1` (line chart — converted from bar to line at runtime by `gauges_controller`)
 - `ui_Chart1_Xaxis`
 - `ui_Chart1_Yaxis1`
 - `ui_Chart1_Yaxis2`
@@ -130,10 +130,21 @@ To add a new transition:
 2. Add an event callback to your button.
 3. Call `_ui_screen_change(...)` with target screen and init function.
 
-## 9. Recommended Next LVGL Improvements
+## 9. Runtime Data Updates (gauges_controller)
 
-- Add runtime update function(s) for all metrics.
-- Keep chart series handles globally if you need continuous chart streaming.
-- Add callbacks for Settings NEXT/BACK.
+The `gauges_controller` module already provides live updates to all metric widgets:
+
+- **Gauge arcs** — `lv_arc_set_value()` with percentage-mapped values every 1 second
+- **Gauge labels** — `lv_label_set_text()` with formatted strings (e.g., `"24.3 V"`)
+- **Data chart** — `lv_chart_set_next_value()` on 3 line series (FlowRate, Voltage, Ampere) in shift mode
+- **Data labels** — `lv_label_set_text()` for all 5 metric panels
+
+All updates run inside a FreeRTOS task and use `lvgl_port_lock()` / `lvgl_port_unlock()` for thread safety.
+
+## 10. Recommended Next LVGL Improvements
+
+- Replace pseudo-random data with real sensor drivers.
+- Add callbacks for Settings NEXT/BACK buttons.
 - Add visual feedback for Save success/failure.
 - Add bounds checking and formatting for numeric text input.
+- Consider adding a status bar or notification area for system events.

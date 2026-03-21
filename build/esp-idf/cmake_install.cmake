@@ -594,6 +594,26 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_ads1115/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_pcnt/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_ds3231/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_sd/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/ESP PROJECTS/WaterTurbine/build/esp-idf/main/cmake_install.cmake")
 endif()
 

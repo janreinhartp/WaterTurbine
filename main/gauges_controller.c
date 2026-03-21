@@ -7,6 +7,8 @@
 #include "esp_lvgl_port.h"
 
 #include "ui.h"
+#include "sensor.h"
+#include "pulse_controller.h"
 
 #define GAUGES_CTRL_TAG   "GAUGE_CTRL"
 #define GAUGES_CTRL_PERIOD_MS 1000
@@ -69,12 +71,36 @@ static void init_data_chart(void)
 
 static void update_values(void)
 {
-    /* Generate pseudo sensor values (shared by Gauges + Data pages) */
-    uint32_t voltage_tenths = rand_range_u32(100, 300);  /* 10.0 V .. 30.0 V */
-    uint32_t ampere_tenths  = rand_range_u32(0, 200);    /*  0.0 A .. 20.0 A */
-    uint32_t rpm            = rand_range_u32(200, 1200);  /* 200 .. 1200 RPM  */
-    uint32_t power_w        = rand_range_u32(0, 500);     /*   0 .. 500 W     */
-    uint32_t flow_tenths    = rand_range_u32(0, 200);    /*  0.0 .. 20.0 L/M */
+    /* ---- Read real sensors for voltage and ampere ---- */
+    float voltage_f = 0.0f;
+    float ampere_f  = 0.0f;
+
+    if (sensor_read_voltage(&voltage_f) != ESP_OK) {
+        voltage_f = 0.0f;
+    }
+    if (sensor_read_ampere(&ampere_f) != ESP_OK) {
+        ampere_f = 0.0f;
+    }
+
+    /* Clamp to display range */
+    if (voltage_f < 0.0f) voltage_f = 0.0f;
+    if (ampere_f  < 0.0f) ampere_f  = 0.0f;
+
+    uint32_t voltage_tenths = (uint32_t)(voltage_f * 10.0f + 0.5f);  /* e.g. 24.3 V -> 243 */
+    uint32_t ampere_tenths  = (uint32_t)(ampere_f  * 10.0f + 0.5f);  /* e.g.  5.1 A ->  51 */
+
+    /* Power = Voltage × Current */
+    uint32_t power_w = (uint32_t)(voltage_f * ampere_f + 0.5f);
+
+    /* ---- Read real sensors for flow rate and RPM ---- */
+    float flow_f = 0.0f;
+    float rpm_f  = 0.0f;
+    pulse_controller_read(&flow_f, &rpm_f);
+    if (flow_f < 0.0f) flow_f = 0.0f;
+    if (rpm_f  < 0.0f) rpm_f  = 0.0f;
+
+    uint32_t flow_tenths = (uint32_t)(flow_f * 10.0f + 0.5f);  /* e.g. 5.3 L/M -> 53 */
+    uint32_t rpm         = (uint32_t)(rpm_f + 0.5f);            /* e.g. 850.2 -> 850  */
 
     /* -------- Gauges screen arcs + labels -------- */
     if (ui_gVoltage && ui_gVoltageValue) {

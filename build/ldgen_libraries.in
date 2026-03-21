@@ -92,4 +92,8 @@ $<TARGET_FILE:__idf_bsp_display>
 $<TARGET_FILE:__idf_espressif__esp_lcd_ek79007>
 $<TARGET_FILE:__idf_lvgl__lvgl>
 $<TARGET_FILE:__idf_bsp_illuminate>
+$<TARGET_FILE:__idf_bsp_ads1115>
+$<TARGET_FILE:__idf_bsp_pcnt>
+$<TARGET_FILE:__idf_bsp_ds3231>
+$<TARGET_FILE:__idf_bsp_sd>
 $<TARGET_FILE:__idf_main>

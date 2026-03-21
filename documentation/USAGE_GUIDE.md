@@ -40,7 +40,10 @@ At boot, the app currently executes this sequence:
 4. Initialize display + LVGL
 5. Turn on LCD backlight
 6. Initialize extra GPIO (LED pin)
-7. Initialize UI screens and load Main Menu
+7. Initialize sensor subsystem (ADS1115 + default calibration)
+8. Initialize pulse controller (flow rate GPIO4, RPM GPIO5)
+9. Initialize UI screens and load Main Menu
+10. Start gauges controller task (1-second update loop)
 
 If one stage fails, the app logs the module name in a loop for easy diagnosis.
 
@@ -55,12 +58,18 @@ If one stage fails, the app logs the module name in a loop for easy diagnosis.
 ### Gauges
 
 - Shows 5 arc gauges (Voltage, Ampere, Speed, Power, Flow)
+- Voltage and Ampere read from ADS1115 ADC with 2-point calibration
+- Flow Rate read from YF-DN50 sensor via hardware pulse counter (GPIO4)
+- RPM read from hall sensor via hardware pulse counter (GPIO5)
+- Power still uses pseudo-random values
+- All gauges update every 1 second
 - BACK returns to Main Menu
 - DATA opens Data page
 
 ### Data
 
-- Shows chart + metric summary labels
+- Shows a live line chart with 3 series (Flow Rate, Voltage, Ampere) in a 20-point rolling window
+- Five metric summary labels update every 1 second
 - BACK returns to Main Menu
 
 ### Settings
@@ -69,33 +78,54 @@ If one stage fails, the app logs the module name in a loop for easy diagnosis.
 - SAVE returns to Main Menu
 - NEXT and BACK are visual only at the moment (no callbacks yet)
 
-## 5. How To Update LVGL Values in Code
+## 5. How Values Are Updated at Runtime
 
-Use object handles exposed by generated headers (examples: `ui_gVoltage`, `ui_lblVoltageValue`, `ui_Chart1`).
+The `gauges_controller` module (`main/gauges_controller.c`) runs a FreeRTOS task that:
 
-Typical update pattern:
+1. Reads voltage and ampere from the ADS1115 via the sensor module (with 2-point calibration applied).
+2. Reads flow rate and RPM from pulse counter sensors via the pulse controller.
+3. Generates pseudo-random value for Power.
+4. Updates gauge arcs (percentage) and value labels on the Gauges screen.
+5. Pushes new data points to the line chart and updates metric labels on the Data screen.
+6. Repeats every 1 second.
+
+All LVGL calls are wrapped in `lvgl_port_lock()` / `lvgl_port_unlock()` for thread safety.
+
+### Calibration
+
+Voltage and Ampere use 2-point linear calibration defined in `main/sensor.c`.
+Default calibration is set in `system_init()` in `main.c`:
 
 ```c
-// Example only: call from a safe LVGL context/task.
-lv_arc_set_value(ui_gVoltage, 55);
-lv_label_set_text(ui_gVoltageValue, "24.3 V");
+// Voltage: 0V ADC -> 0V actual, 4.0V ADC -> 30.0V actual
+sensor_cal_t voltage_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
+                             .raw2 = 4.0f, .actual2 = 30.0f };
+sensor_set_voltage_cal(&voltage_cal);
 
-lv_chart_set_next_value(ui_Chart1, series_handle, 37);
+// Ampere: 0V ADC -> 0A actual, 4.0V ADC -> 20.0A actual
+sensor_cal_t ampere_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
+                            .raw2 = 4.0f, .actual2 = 20.0f };
+sensor_set_ampere_cal(&ampere_cal);
 ```
 
-Practical recommendation:
+Adjust these values to match your voltage divider ratio and current sensor output characteristics.
 
-- Keep data acquisition in a dedicated task.
-- Push parsed values to a UI update function.
-- Apply LVGL updates in the LVGL-safe context (through your LVGL port locking strategy/task model).
+### Flow Rate & RPM
 
-## 6. How To Add New App Logic
+Flow rate and RPM use hardware pulse counters (PCNT peripheral) configured in `main/pulse_controller.c`.
+
+- **YF-DN50 flow sensor** (GPIO4): Default factor = 3.5 Hz per L/min. Adjust with `pulse_controller_set_flow_factor()`.
+- **Hall sensor** (GPIO5): Default = 1 pulse per revolution. Adjust with `pulse_controller_set_rpm_ppr()`.
+
+To replace remaining pseudo-random data (Power), add a driver and modify `update_values()` in `gauges_controller.c`.
+
+## 6. How To Extend the Project
 
 1. Add sensor read module in `peripheral/` or `main/`.
 2. Parse/scale raw values.
-3. Update LVGL widgets in a periodic UI update routine.
+3. Add calibration and integrate into `gauges_controller.c` `update_values()` (see voltage/ampere for pattern).
 4. If settings are needed, connect `NEXT/BACK/SAVE` button callbacks.
-5. Save settings to NVS if persistence is required.
+5. Save settings/calibration to NVS if persistence is required.
 
 ## 7. Troubleshooting
 

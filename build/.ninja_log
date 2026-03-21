@@ -1,17 +1,17 @@
 # ninja log v6
-42352	43500	7954322161314260	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/api/err.c.obj	6a7ea28c0e7477be
-121673	122447	7954322953414772	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/psa_crypto_hash.c.obj	ecfbd38bd67562ba
-6718	7730	7954321803855568	esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/src/gdbstub.c.obj	62fdc9b50bf6cc5f
-207857	208323	7954323815242954	esp-idf/console/CMakeFiles/__idf_console.dir/split_argv.c.obj	e117ee27d0339712
-121699	122522	7954322953665738	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/psa_crypto_mac.c.obj	11874ac73775dc7f
-223440	224048	7954323971078987	esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/diskio/diskio_wl.c.obj	53106a5c52cc6027
 7002	7832	7954321807085842	esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/src/gdbstub_transport.c.obj	3036b1ce4c3683d5
+223440	224048	7954323971078987	esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/diskio/diskio_wl.c.obj	53106a5c52cc6027
+121699	122522	7954322953665738	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/psa_crypto_mac.c.obj	11874ac73775dc7f
+207857	208323	7954323815242954	esp-idf/console/CMakeFiles/__idf_console.dir/split_argv.c.obj	e117ee27d0339712
+6718	7730	7954321803855568	esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/src/gdbstub.c.obj	62fdc9b50bf6cc5f
+121673	122447	7954322953414772	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/psa_crypto_hash.c.obj	ecfbd38bd67562ba
+42352	43500	7954322161314260	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/api/err.c.obj	6a7ea28c0e7477be
 79582	81220	7954322533068451	esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/mspi_timing_by_dqs.c.obj	bacbf93545c847ab
 116833	117297	7954322905012862	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/des.c.obj	82f5cac873fc1c3a
 60807	61744	7954322344821199	esp-idf/esp_driver_usb_serial_jtag/CMakeFiles/__idf_esp_driver_usb_serial_jtag.dir/src/usb_serial_jtag_connection_monitor.c.obj	2aacb023bda74273
 244	529	7954321741731702	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/memory.ld	806fe24833704e6c
-228700	229549	7954324023775508	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui.c.obj	64363e826c74eba9
-92	26713	7954331353776564	build.ninja	c1a833ff93b25d36
+2268	3772	7957819827467131	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui.c.obj	1ccfcfe290f20116
+127	36591	7957825610393360	build.ninja	c1a833ff93b25d36
 283	451	7954321740637002	project_elf_src_esp32p4.c	cbf914a15b58f4d8
 76325	77160	7954322500019936	esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/mipi_csi_share_hw_ctrl.c.obj	e9d0a6c7eaf5c71f
 8586	15239	7954321822547488	esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/src/nvs_pagemanager.cpp.obj	fc5723a89076a5c7
@@ -47,6 +47,7 @@
 580	1600	7954321742480599	esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/src/httpd_sess.c.obj	282bb1707fd485d2
 270	2306	7954321742353274	C:/ESP PROJECTS/WaterTurbine/build/partition_table/partition-table.bin	a96225f22a93b780
 8099	9083	7954321818374027	esp-idf/esp-tls/libesp-tls.a	8d9e15dce93b2891
+936	2439	7957819814150258	esp-idf/main/CMakeFiles/__idf_main.dir/sensor.c.obj	a0380925dadd6840
 151664	152272	7954323253309782	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/drivers/x11/lv_x11_input.c.obj	d5794f0fe7e6f4d4
 198400	199122	7954323720676880	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/canvas/lv_example_canvas_1.c.obj	d2c1cc101ddab6b4
 3599	5292	7954321772708834	esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/transport_ws.c.obj	83b8f6fdd7d5b46a
@@ -59,10 +60,10 @@
 152432	153233	7954323261046484	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_12.c.obj	b8fb444acfa7329
 952	2063	7954321746343955	esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/src/httpd_txrx.c.obj	c7db440acef486cb
 72062	73010	7954322457657451	esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/sleep_modem.c.obj	4726da3696b3360f
-216794	217574	7954323904630400	esp-idf/espressif__esp_lvgl_port/liblvgl_port_lib.a	80085f81eef3072f
 59442	60542	7954322331229867	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/apps/dhcpserver/dhcpserver.c.obj	b1c49cfc063b1a68
-270	2306	7954321742353274	partition_table/partition-table.bin	a96225f22a93b780
+216794	217574	7954323904630400	esp-idf/espressif__esp_lvgl_port/liblvgl_port_lib.a	80085f81eef3072f
 151511	152053	7954323251786221	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/drivers/x11/lv_x11_display.c.obj	693497e25342f50e
+270	2306	7954321742353274	partition_table/partition-table.bin	a96225f22a93b780
 46347	47565	7954322200374491	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/core/memp.c.obj	7358e7e2aa8820d0
 114484	115358	7954322881799089	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/aria.c.obj	d949fc5ae2565f2c
 140371	141182	7954323141046858	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/draw/lv_image_decoder.c.obj	a6960044856137bf
@@ -125,7 +126,8 @@
 174843	175635	7954323485109460	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/label/lv_label.c.obj	9c2010015505743e
 4425	5323	7954321780925922	esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/adc_oneshot.c.obj	45b005eb475a6de
 86789	87447	7954322604560384	esp-idf/heap/CMakeFiles/__idf_heap.dir/heap_caps_init.c.obj	2a96155b8b299dd8
-918	1087	7954330630150175	esp-idf/main/libmain.a	fb0bad9ce89e4a34
+925	2267	7957819814039953	esp-idf/main/CMakeFiles/__idf_main.dir/pulse_controller.c.obj	4509350dc9627113
+6340	6865	7957819868181882	esp-idf/main/libmain.a	b48df2163d7ac522
 162834	163124	7954323365028036	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/libs/thorvg/tvgMath.cpp.obj	70de59e379f5f290
 7860	8500	7954321815323801	esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/src/wifi_default_ap.c.obj	2ca97cf8d62946a8
 142390	142705	7954323160574776	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/draw/renesas/dave2d/lv_draw_dave2d_image.c.obj	f8ca584e1d69b7e
@@ -185,9 +187,9 @@
 32801	33831	7954322064690710	esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/i2s_etm.c.obj	ba7c732d30a252a
 105162	105770	7954322788303721	esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/esp_cache_utils.c.obj	c381c2407d1d5c54
 63110	64172	7954322368252329	esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/src/gptimer_common.c.obj	9746eaac40a8430e
-632	756	7954330628442590	CMakeFiles/bootloader-complete	dad94e233ac750e4
+6716	7169	7957819875833590	CMakeFiles/bootloader-complete	dad94e233ac750e4
 8487	15105	7954321821577401	esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/src/nvs_cxx_api.cpp.obj	e9fa3931971c17e6
-249	574	7954330623460255	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
+4924	6472	7957819854029002	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
 54762	55524	7954322284811379	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/netif/ppp/ipv6cp.c.obj	e864e173c70fc5b2
 111967	112446	7954322856467974	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_tls13_server.c.obj	8bcd4262cb7c90a2
 205179	205851	7954323788463400	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/scale/lv_example_scale_5.c.obj	c1483a22c47991e
@@ -226,7 +228,7 @@
 116025	116662	7954322897228208	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/chacha20.c.obj	71a7c3a19d0623a3
 22077	24070	7954321957455186	esp-idf/driver/CMakeFiles/__idf_driver.dir/deprecated/timer_legacy.c.obj	c076d2d18709b9eb
 16778	24450	7954321904763285	esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/src/nvs_types.cpp.obj	56f4c1257744434e
-249	574	7954330623460255	bootloader/bootloader.elf	e13d8b55721908c8
+4924	6472	7957819854029002	bootloader/bootloader.elf	e13d8b55721908c8
 92360	92869	7954322660286374	esp-idf/hal/CMakeFiles/__idf_hal.dir/sdm_hal.c.obj	e5b5cd181d89bc4d
 56262	57230	7954322300126295	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/netif/ppp/pppos.c.obj	39fb2fc0be3b9765
 22901	24915	7954321965889012	esp-idf/driver/CMakeFiles/__idf_driver.dir/i2c/i2c.c.obj	2648ff10bb120b4c
@@ -443,7 +445,7 @@
 101165	101857	7954322748476763	esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/arch/riscv/debug_helpers.c.obj	6ee6c50792b738c2
 104229	104975	7954322778965415	esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/spi_flash_os_func_noos.c.obj	2cc256bc9b12496b
 43784	44991	7954322175434455	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/api/tcpip.c.obj	199cb5471eeafa63
-258608	258879	7954324322842130	esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
+22780	22956	7957820032589671	esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
 91646	92337	7954322653359482	esp-idf/hal/CMakeFiles/__idf_hal.dir/gdma_hal_top.c.obj	1174130e50b27280
 153299	153990	7954323269980979	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_24.c.obj	b53b7f3314ae1f95
 209527	210155	7954323832048565	esp-idf/esp_driver_ppa/libesp_driver_ppa.a	d43f75ed0a5da2e4
@@ -507,9 +509,9 @@
 76252	77106	7954322499496078	esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/adc_share_hw_ctrl.c.obj	88de1f77fcf4b971
 50904	51866	7954322245713595	esp-idf/esp_driver_mcpwm/libesp_driver_mcpwm.a	1ec87a5b13ba0a88
 51031	51881	7954322247327335	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/core/ipv6/icmp6.c.obj	47f6740dfc781c44
+51278	51937	7954322249696882	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/core/ipv6/inet6.c.obj	dd780840ecbf6a00
 52359	53268	7954322260413601	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/netif/bridgeif.c.obj	bb5180febd298905
 107529	108202	7954322812497678	esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/src/esp32p4/secure_boot_secure_features.c.obj	6e2cf41e0964b4c7
-51278	51937	7954322249696882	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/core/ipv6/inet6.c.obj	dd780840ecbf6a00
 139735	140219	7954323134031155	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/draw/lv_draw_line.c.obj	6a4e0a597d8259a0
 79461	81011	7954322531580341	esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/mspi_timing_tuning.c.obj	1cf32f05bf5bc9cf
 51820	52517	7954322255066893	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/lwip/src/core/ipv6/ip6_frag.c.obj	2fa5f917b67a1ebe
@@ -570,10 +572,11 @@
 137062	137948	7954323107304015	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/core/lv_obj_draw.c.obj	456358156e79e502
 184361	185243	7954323580280025	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/libs/gif/img_bulb_gif.c.obj	b9364ce5eb51575e
 57171	58702	7954322308387776	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/port/debug/lwip_debug.c.obj	b0fbe051fab3a9f3
-249	574	7954330623460255	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
+4924	6472	7957819854029002	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
 95645	96184	7954322693129998	esp-idf/hal/CMakeFiles/__idf_hal.dir/usb_utmi_hal.c.obj	f376357e11889fb5
 110231	110903	7954322838973663	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_cookie.c.obj	afe1b2f101d85a94
 57495	58788	7954322311886337	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/port/freertos/sys_arch.c.obj	92d1582e67547c2e
+89	3161626	7954321391638012	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/confserver	6c084b3e9d35afaf
 85650	85986	7954322593339496	esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32p4/lcd_periph.c.obj	a55c4186a201f0c2
 136868	137497	7954323105354482	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/core/lv_obj_class.c.obj	c7e538c8e173dd7b
 58011	58955	7954322317183218	esp-idf/lwip/CMakeFiles/__idf_lwip.dir/apps/ping/esp_ping.c.obj	9fb0e56bd757b937
@@ -608,7 +611,7 @@
 63206	64154	7954322368742367	esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/src/gptimer_etm.c.obj	e9ae4b435b3a141b
 62790	64214	7954322365992148	esp-idf/vfs/libvfs.a	ced193b98b3c1dff
 128809	129045	7954323024767581	esp-idf/mbedtls/mbedtls/3rdparty/everest/libeverest.a	f80fea79b75ed241
-229558	230379	7954324032261384	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_helpers.c.obj	e890d90762886f0e
+4893	6108	7957819853723667	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_helpers.c.obj	c1ee2552c7f7ac2f
 100876	101279	7954322745521892	esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/port/arch/riscv/esp_ipc_isr_handler.S.obj	e34b78293d0fba8b
 63745	64499	7954322374120581	esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/src/esp_timer.c.obj	3e3e901843bc724d
 124212	124705	7954322978804692	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/version_features.c.obj	ddefe05c40b48f74
@@ -672,7 +675,7 @@
 69149	70165	7954322428257009	esp-idf/esp_timer/libesp_timer.a	3621d0a6f4afe11e
 224054	224710	7954323977309193	esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/port/freertos/ffsystem.c.obj	52cdb5b95e58850b
 68360	68894	7954322420389760	esp-idf/freertos/CMakeFiles/__idf_freertos.dir/port_common.c.obj	face9e111528487b
-113766	114749	7954322874338824	esp-idf/esp_app_format/libesp_app_format.a	157c05d003e2ac24
+1987	2593	7957780233894394	esp-idf/esp_app_format/libesp_app_format.a	157c05d003e2ac24
 68387	69128	7954322420545180	esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a	b82dd1048f42ecec
 207086	207874	7954323807654150	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/tabview/lv_example_tabview_2.c.obj	cbb4499c76c1083c
 82268	83098	7954322559340253	esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/port/esp32p4/pmu_pvt.c.obj	810cf744593f7fb2
@@ -770,6 +773,7 @@
 84576	85243	7954322582443458	esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32p4/gdma_periph.c.obj	1531adf5bed9492e
 85087	85623	7954322587683901	esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32p4/pcnt_periph.c.obj	cfe027a2f53234c1
 151882	152425	7954323255497007	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font.c.obj	9152cf36e8d522c1
+2344	4940	7957819828230487	esp-idf/bsp_ds3231/libbsp_ds3231.a	78d4e1aa5de42d57
 85182	85643	7954322588493486	esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32p4/sdm_periph.c.obj	727305f871e4d8b2
 85332	85673	7954322590254660	esp-idf/soc/CMakeFiles/__idf_soc.dir/esp32p4/i2s_periph.c.obj	2f265c1b708e9610
 88401	88862	7954322620696304	esp-idf/log/CMakeFiles/__idf_log.dir/src/log_level/tag_log_level/tag_log_level.c.obj	323e25db2bc0fccd
@@ -946,7 +950,7 @@
 102401	102930	7954322760688252	esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/spi_flash_chip_issi.c.obj	10e8a508d89e00b2
 102475	103126	7954322761432565	esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/spi_flash_chip_gd.c.obj	3afbae71965dc665
 102436	103191	7954322761037433	esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/spi_flash_chip_mxic.c.obj	d4febc4356da66a3
-575	632	7954330626710381	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
+6473	6716	7957819869517422	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
 217008	217676	7954323906765406	esp-idf/app_trace/CMakeFiles/__idf_app_trace.dir/app_trace.c.obj	d98fa21fd729f3d0
 207841	208388	7954323815084613	esp-idf/console/CMakeFiles/__idf_console.dir/commands.c.obj	a36f31a91923897
 102567	103242	7954322762339860	esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/spi_flash_chip_winbond.c.obj	81c4f471b5a10c45
@@ -966,7 +970,7 @@
 120360	120953	7954322940277432	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/platform.c.obj	b6ba12e852e42099
 104380	105438	7954322780565370	esp-idf/esp_system/libesp_system.a	740815692f009947
 104990	105470	7954322786837071	esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/port/esp32p4/ext_mem_layout.c.obj	5d197ad14837550b
-249	574	7954330623460255	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
+4924	6472	7957819854029002	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
 104541	105584	7954322782238039	esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/esp_mmu_map.c.obj	5f1272b1e94b21c5
 127377	127878	7954323010438551	esp-idf/mbedtls/mbedtls/3rdparty/everest/CMakeFiles/everest.dir/library/everest.c.obj	c631e4a3b4d4cd6e
 105175	105610	7954322788435510	esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/heap_align_hw.c.obj	1b0a7269fccaa916
@@ -1005,7 +1009,7 @@
 213276	214058	7954323869437881	esp-idf/esp_driver_isp/CMakeFiles/__idf_esp_driver_isp.dir/src/isp_hist.c.obj	c3e0cca6676edeb
 183388	184238	7954323570664940	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/layouts/grid/lv_example_grid_3.c.obj	f998e0d33a58d17f
 118549	119294	7954322922172101	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/md.c.obj	d55f0c07bc22ff01
-109694	110211	7954322833679663	esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/esp_app_desc.c.obj	9ac867bf314acc36
+300	1987	7957780217033496	esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/esp_app_desc.c.obj	ab1637b814e778d5
 109836	110324	7954322835037058	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/mps_trace.c.obj	c8188b102ffe3b4
 199974	200942	7954323736760598	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/chart/lv_example_chart_5.c.obj	bb084206b8f49262
 164251	164647	7954323379230022	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/libs/thorvg/tvgSwRenderer.cpp.obj	f84f2d0986772e8b
@@ -1019,8 +1023,8 @@
 110179	110882	7954322838467503	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_ciphersuites.c.obj	c46b0f979b329cb8
 173982	174710	7954323476503803	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/checkbox/lv_checkbox.c.obj	607630c9f17497ae
 110196	110925	7954322838714713	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_client.c.obj	f3bfbd78953c5634
-151478	151907	7954323251465341	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/drivers/windows/lv_windows_input.c.obj	f248dde4448300cd
 110828	111934	7954322845163382	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_msg.c.obj	d6d8d20f5e6d2dce
+151478	151907	7954323251465341	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/drivers/windows/lv_windows_input.c.obj	f248dde4448300cd
 110930	111987	7954322845959145	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_tls12_client.c.obj	a4fb67dc932143f3
 217676	218319	7954323913433994	esp-idf/esp_driver_isp/libesp_driver_isp.a	7b74edb7d95f48ca
 111026	112122	7954322847360117	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/ssl_tls12_server.c.obj	b07b25cc7449c3da
@@ -1057,7 +1061,7 @@
 114405	114826	7954322880862188	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/aesce.c.obj	cad23d473a5af6d
 114326	114907	7954322879974359	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/aes.c.obj	923ab02155d07bc6
 114782	115404	7954322884587297	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/asn1parse.c.obj	f62342f56173fa50
-257648	258601	7954324322376689	C:/ESP PROJECTS/WaterTurbine/build/.bin_timestamp	51f9d3b8b477ae52
+21867	22780	7957820032476657	C:/ESP PROJECTS/WaterTurbine/build/.bin_timestamp	51f9d3b8b477ae52
 196159	196855	7954323698270299	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/styles/lv_example_style_9.c.obj	f125d6ed4119107d
 114808	115461	7954322884833158	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/asn1write.c.obj	59f5f89ec52428f6
 115468	116063	7954322891413708	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/block_cipher.c.obj	f6e90a058702a8c4
@@ -1070,7 +1074,7 @@
 117751	118549	7954322914193462	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/error.c.obj	cb4adf6daf551938
 116307	117003	7954322900192497	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/cipher_wrap.c.obj	82579f91de373c2b
 149027	149409	7954323227013816	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/drivers/glfw/lv_glfw_window.c.obj	9c1a72ffae41dbd9
-258608	258879	7954324322842130	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
+22780	22956	7957820032589671	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
 117147	117593	7954322908228585	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/ecjpake.c.obj	b4df1145ad2aaf68
 177939	178632	7954323516147302	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/tileview/lv_tileview.c.obj	82f0dd4f4217a759
 117487	118140	7954322911552417	esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/ecp_curves_new.c.obj	da3c1edc015045c5
@@ -1149,7 +1153,7 @@
 129055	129598	7954323032057449	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/mbedtls/x509_crt_bundle	a2ba802c28af8a3a
 146796	147150	7954323204644181	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/draw/vg_lite/lv_draw_vg_lite_line.c.obj	62b94d96511342a0
 129598	130070	7954323037109450	C:/ESP PROJECTS/WaterTurbine/build/x509_crt_bundle.S	987f9dd937158ba9
-256254	257646	7954324299232144	WaterTurbine.elf	1fc773e986a93fa1
+20050	21866	7957820005285415	WaterTurbine.elf	9f7a8e6fce2f74d9
 130108	130921	7954323037755679	esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/pm_locks.c.obj	7d6a1350e8e2a8e0
 177112	177934	7954323507997860	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/span/lv_span.c.obj	4a2f0775f31c1803
 130138	131027	7954323038170367	esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/pm_impl.c.obj	137d970135d0b310
@@ -1266,7 +1270,7 @@
 152528	153288	7954323262081004	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_14.c.obj	e98cd4c06431c893
 153240	154138	7954323269081946	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_22.c.obj	5f918caf06ca086c
 153832	154614	7954323275066095	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_28_compressed.c.obj	1c334cc59ed2d149
-228870	229698	7954324025384706	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_MainMenu.c.obj	db110213c93c2e02
+3221	5043	7957819836990117	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_MainMenu.c.obj	159d199181309f15
 154536	155356	7954323282037302	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_36.c.obj	2cedf76c28b123c5
 154787	155878	7954323284565009	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/font/lv_font_montserrat_42.c.obj	fb5b07be14782709
 177473	178396	7954323512129464	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/src/widgets/spinner/lv_spinner.c.obj	74c0a340dea542d
@@ -1482,7 +1486,7 @@
 197555	198350	7954323712277603	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/button/lv_example_button_1.c.obj	90aaeebe954ea633
 197578	198388	7954323712563832	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/button/lv_example_button_2.c.obj	25c86b2f5a3f2e1c
 197639	198400	7954323713066866	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/button/lv_example_button_3.c.obj	6cd8073aa20cb1ff
-1087	9960	7954330719913989	esp-idf/esp_system/ld/sections.ld	3f93462691894747
+6865	19900	7957820002975286	esp-idf/esp_system/ld/sections.ld	3f93462691894747
 197659	198512	7954323713277599	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/buttonmatrix/lv_example_buttonmatrix_1.c.obj	f4820498a8a910aa
 198140	199044	7954323719338265	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/buttonmatrix/lv_example_buttonmatrix_2.c.obj	3b244b5aaef109d4
 198353	199071	7954323720210783	esp-idf/lvgl__lvgl/CMakeFiles/__idf_lvgl__lvgl.dir/examples/widgets/calendar/lv_example_calendar_1.c.obj	bd257bb908009b16
@@ -1529,7 +1533,7 @@
 208033	208689	7954323817013459	esp-idf/console/CMakeFiles/__idf_console.dir/argtable3/arg_cmd.c.obj	bdfed57b205e24ad
 215228	216201	7954323888955729	esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/src/security/security1.c.obj	ba738b41ede4dbee
 208575	209128	7954323822499362	esp-idf/console/CMakeFiles/__idf_console.dir/argtable3/arg_end.c.obj	d89f61ebc66ba925
-229567	230508	7954324032355343	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_img_1396634952.c.obj	92d93a0c8101ad42
+4912	6340	7957819853908789	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_img_1396634952.c.obj	d6836dc21fab296d
 208627	209158	7954323822941069	esp-idf/console/CMakeFiles/__idf_console.dir/argtable3/arg_file.c.obj	3f9b8e07f567fa9d
 209052	209546	7954323827324836	esp-idf/console/CMakeFiles/__idf_console.dir/argtable3/arg_rem.c.obj	48b4d7b356dbe77
 209167	209600	7954323828438788	esp-idf/console/CMakeFiles/__idf_console.dir/argtable3/arg_str.c.obj	b6018f3920b20b8
@@ -1545,9 +1549,10 @@
 210271	211579	7954323839379597	esp-idf/espressif__esp_lvgl_port/CMakeFiles/lvgl_port_lib.dir/src/lvgl9/esp_lvgl_port_disp.c.obj	39b4575f470f7d3f
 210734	211904	7954323844383986	esp-idf/espressif__esp_lvgl_port/CMakeFiles/lvgl_port_lib.dir/src/lvgl9/esp_lvgl_port_touch.c.obj	fdbb1f4ef302b2a
 211490	212202	7954323851582203	esp-idf/unity/CMakeFiles/__idf_unity.dir/unity_utils_freertos.c.obj	6567a2ba07e27d64
+876	2326	7957819813565807	esp-idf/bsp_pcnt/CMakeFiles/__idf_bsp_pcnt.dir/bsp_pcnt.c.obj	c2a3e4489c99e57f
 211872	212464	7954323855402069	esp-idf/unity/CMakeFiles/__idf_unity.dir/unity_utils_memory.c.obj	efcf04ddac2e49f
 211929	212542	7954323856217193	esp-idf/unity/CMakeFiles/__idf_unity.dir/unity_port_esp32.c.obj	69a7b1f5b54afa68
-229391	229719	7954324030909583	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_comp_hook.c.obj	a2493359bce5f07d
+3915	4924	7957819843934386	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_comp_hook.c.obj	2f636f757481c882
 212247	213120	7954323859375902	esp-idf/console/libconsole.a	3c8eccd2225ddbf
 212527	213259	7954323862023849	esp-idf/esp_driver_isp/CMakeFiles/__idf_esp_driver_isp.dir/src/isp_ccm.c.obj	5980d6d0711b6759
 213245	213980	7954323869186554	esp-idf/esp_driver_isp/CMakeFiles/__idf_esp_driver_isp.dir/src/isp_gamma.c.obj	f36d5e6d70626437
@@ -1608,10 +1613,10 @@
 227513	228232	7954324012131960	esp-idf/usb/CMakeFiles/__idf_usb.dir/usb_helpers.c.obj	c616bc462d15667a
 228048	228821	7954324017155752	esp-idf/usb/CMakeFiles/__idf_usb.dir/usb_phy.c.obj	89b6ce2f6ee32782
 227998	228880	7954324016789894	esp-idf/usb/CMakeFiles/__idf_usb.dir/usbh.c.obj	4281d403b67c72b3
-240	918	7954330623371113	esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj	dcf2def0114edc56
-228721	229567	7954324023947696	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Data.c.obj	54963d75f75e8c0b
-228831	229682	7954324025062029	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Gauges.c.obj	b41083848135f26e
-228890	229759	7954324025701438	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Settings.c.obj	f8b81b07e543eabe
+914	3220	7957819813929722	esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj	586c563fbc473f0c
+2439	3915	7957819829180976	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Data.c.obj	d4ebc6c019d7bc9f
+2926	4912	7957819834048877	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Gauges.c.obj	c09abd80eb1c21c0
+3772	5601	7957819842500079	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Settings.c.obj	6650c99764709fe
 229698	230137	7954324033659413	esp-idf/cmock/libcmock.a	fc2d7ffd5ca2fab3
 229719	230342	7954324033857132	esp-idf/esp_driver_cam/libesp_driver_cam.a	4b48526cc3b78d6c
 229759	230414	7954324034255212	esp-idf/esp_driver_jpeg/libesp_driver_jpeg.a	15b69e8bce5a57df
@@ -1621,99 +1626,61 @@
 230711	231148	7954324043788814	esp-idf/nvs_sec_provider/libnvs_sec_provider.a	3f3679846bf888d0
 230806	231179	7954324044737277	esp-idf/rt/librt.a	eb8c2d433e92771
 230913	231322	7954324045809297	esp-idf/usb/libusb.a	b3b99e9a03c63a2d
-249	574	7954330623460255	bootloader/bootloader.bin	e13d8b55721908c8
-249	574	7954330623460255	bootloader/bootloader.map	e13d8b55721908c8
-249	574	7954330623460255	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-249	574	7954330623460255	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
-575	632	7954330626710381	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-632	756	7954330628442590	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-632	756	7954330628442590	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
-632	756	7954330628442590	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-1087	9960	7954330719913989	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/sections.ld	3f93462691894747
-256082	256252	7954324297498231	CMakeFiles/WaterTurbine.elf.dir/project_elf_src_esp32p4.c.obj	70be12e0eb6858af
-257648	258601	7954324322376689	.bin_timestamp	51f9d3b8b477ae52
-91	16987	7954331353776564	build.ninja	c1a833ff93b25d36
-245	525	7954331357760797	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-245	525	7954331357760797	bootloader/bootloader.elf	e13d8b55721908c8
-245	525	7954331357760797	bootloader/bootloader.bin	e13d8b55721908c8
-245	525	7954331357760797	bootloader/bootloader.map	e13d8b55721908c8
-245	525	7954331357760797	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-245	525	7954331357760797	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
-245	525	7954331357760797	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
-245	525	7954331357760797	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
-525	587	7954331360561811	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-525	587	7954331360561811	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-587	717	7954331362379591	CMakeFiles/bootloader-complete	dad94e233ac750e4
-587	717	7954331362379591	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-587	717	7954331362379591	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
-587	717	7954331362379591	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-251	1257	7954337363905200	esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj	dcf2def0114edc56
-242	1274	7954337363808062	esp-idf/main/CMakeFiles/__idf_main.dir/gauges_controller.c.obj	ee740bba9663b4ca
-258	1351	7954337363970484	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-258	1351	7954337363970484	bootloader/bootloader.elf	e13d8b55721908c8
-258	1351	7954337363970484	bootloader/bootloader.bin	e13d8b55721908c8
-258	1351	7954337363970484	bootloader/bootloader.map	e13d8b55721908c8
-258	1351	7954337363970484	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-258	1351	7954337363970484	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
-258	1351	7954337363970484	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
-258	1351	7954337363970484	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
-1351	1456	7954337374908907	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-1351	1456	7954337374908907	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-1274	1570	7954337374131449	esp-idf/main/libmain.a	c39dfde071cd746b
-1456	1720	7954337378511620	CMakeFiles/bootloader-complete	dad94e233ac750e4
-1456	1720	7954337378511620	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-1456	1720	7954337378511620	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
-1456	1720	7954337378511620	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-1570	9928	7954337459949384	esp-idf/esp_system/ld/sections.ld	3f93462691894747
-1570	9928	7954337459949384	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/sections.ld	3f93462691894747
-9928	10978	7954337460677544	WaterTurbine.elf	1fc773e986a93fa1
-10978	11463	7954337475954380	.bin_timestamp	51f9d3b8b477ae52
-10978	11463	7954337475954380	C:/ESP PROJECTS/WaterTurbine/build/.bin_timestamp	51f9d3b8b477ae52
-11463	11590	7954337476025578	esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
-11463	11590	7954337476025578	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
-249	536	7954341041529474	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-249	536	7954341041529474	bootloader/bootloader.elf	e13d8b55721908c8
-249	536	7954341041529474	bootloader/bootloader.bin	e13d8b55721908c8
-249	536	7954341041529474	bootloader/bootloader.map	e13d8b55721908c8
-249	536	7954341041529474	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-249	536	7954341041529474	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
-249	536	7954341041529474	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
-249	536	7954341041529474	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
-537	607	7954341044399821	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-537	607	7954341044399821	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-607	717	7954341046130117	CMakeFiles/bootloader-complete	dad94e233ac750e4
-607	717	7954341046130117	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-607	717	7954341046130117	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
-607	717	7954341046130117	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-240	884	7954341041434478	esp-idf/main/CMakeFiles/__idf_main.dir/gauges_controller.c.obj	ee740bba9663b4ca
-885	1033	7954341047882631	esp-idf/main/libmain.a	c39dfde071cd746b
-1033	9111	7954341129409869	esp-idf/esp_system/ld/sections.ld	3f93462691894747
-1033	9111	7954341129409869	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/sections.ld	3f93462691894747
-9111	10268	7954341130149730	WaterTurbine.elf	1fc773e986a93fa1
-10269	10858	7954341147480951	.bin_timestamp	51f9d3b8b477ae52
-10269	10858	7954341147480951	C:/ESP PROJECTS/WaterTurbine/build/.bin_timestamp	51f9d3b8b477ae52
-10858	11008	7954341147621208	esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
-10858	11008	7954341147621208	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
-236	506	7954346918430161	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-236	506	7954346918430161	bootloader/bootloader.elf	e13d8b55721908c8
-236	506	7954346918430161	bootloader/bootloader.bin	e13d8b55721908c8
-236	506	7954346918430161	bootloader/bootloader.map	e13d8b55721908c8
-236	506	7954346918430161	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
-236	506	7954346918430161	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
-236	506	7954346918430161	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
-236	506	7954346918430161	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
-507	574	7954346921130283	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-507	574	7954346921130283	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
-575	680	7954346922797787	CMakeFiles/bootloader-complete	dad94e233ac750e4
-575	680	7954346922797787	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-575	680	7954346922797787	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
-575	680	7954346922797787	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
-227	847	7954346918340347	esp-idf/main/CMakeFiles/__idf_main.dir/gauges_controller.c.obj	ee740bba9663b4ca
-848	1218	7954346924540524	esp-idf/main/libmain.a	c39dfde071cd746b
-1219	9109	7954347006494445	esp-idf/esp_system/ld/sections.ld	3f93462691894747
-1219	9109	7954347006494445	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/sections.ld	3f93462691894747
-9109	10111	7954347007161857	WaterTurbine.elf	1fc773e986a93fa1
-10111	10568	7954347021673509	.bin_timestamp	51f9d3b8b477ae52
-10111	10568	7954347021673509	C:/ESP PROJECTS/WaterTurbine/build/.bin_timestamp	51f9d3b8b477ae52
-10568	10694	7954347021745441	esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
-10568	10694	7954347021745441	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
+4924	6472	7957819854029002	bootloader/bootloader.bin	e13d8b55721908c8
+4924	6472	7957819854029002	bootloader/bootloader.map	e13d8b55721908c8
+4924	6472	7957819854029002	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
+4924	6472	7957819854029002	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
+6473	6716	7957819869517422	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
+6716	7169	7957819875833590	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
+6716	7169	7957819875833590	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
+6716	7169	7957819875833590	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
+6865	19900	7957820002975286	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/sections.ld	3f93462691894747
+19900	20050	7957820003790240	CMakeFiles/WaterTurbine.elf.dir/project_elf_src_esp32p4.c.obj	d0517cec66e3948a
+21867	22780	7957820032476657	.bin_timestamp	51f9d3b8b477ae52
+903	2926	7957819813819453	esp-idf/main/CMakeFiles/__idf_main.dir/gauges_controller.c.obj	3e5e2111232d9b5c
+89	3161626	7954321391638012	CMakeFiles/confserver	6c084b3e9d35afaf
+269	1964	7957798532583640	esp-idf/bsp_ads1115/CMakeFiles/__idf_bsp_ads1115.dir/bsp_ads1115.c.obj	e6b1f7fa6bbe0258
+1964	3541	7957798549531452	esp-idf/bsp_ads1115/libbsp_ads1115.a	3ed4b06a98f0b52d
+2328	4893	7957819828069806	esp-idf/bsp_pcnt/libbsp_pcnt.a	94f02786fbb896be
+893	2344	7957819813719244	esp-idf/bsp_ds3231/CMakeFiles/__idf_bsp_ds3231.dir/bsp_ds3231.c.obj	403cd2d98253ca92
+109	22087	7957825610393360	build.ninja	c1a833ff93b25d36
+306	1083	7957825614821728	esp-idf/main/CMakeFiles/__idf_main.dir/pulse_controller.c.obj	115c70f285af0843
+255	1231	7957825614301605	esp-idf/bsp_ds3231/CMakeFiles/__idf_bsp_ds3231.dir/bsp_ds3231.c.obj	403cd2d98253ca92
+286	1450	7957825614624826	esp-idf/main/CMakeFiles/__idf_main.dir/gauges_controller.c.obj	c87a22edcb096cd
+277	1587	7957825614527314	esp-idf/main/CMakeFiles/__idf_main.dir/data_logger.c.obj	80148b816eb15f57
+266	1630	7957825614425790	esp-idf/bsp_sd/CMakeFiles/__idf_bsp_sd.dir/bsp_sd.c.obj	a8a9639210bf461b
+296	1758	7957825614724915	esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj	5724f9848e14dc26
+1084	1841	7957825622606324	esp-idf/main/CMakeFiles/__idf_main.dir/sensor.c.obj	a1207e3eed407761
+1451	2607	7957825626274891	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui.c.obj	c5f263a07d006e02
+1231	2732	7957825624074103	esp-idf/bsp_ds3231/libbsp_ds3231.a	78d4e1aa5de42d57
+1587	2896	7957825627634874	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Data.c.obj	8a2a554c4e68882
+1630	2983	7957825628062588	esp-idf/bsp_sd/libbsp_sd.a	c8eabef77b34eab
+1758	3063	7957825629338443	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Gauges.c.obj	8e53f148ce9cd2df
+1841	3114	7957825630171831	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_MainMenu.c.obj	8bfcc5cf0851f47
+2732	3214	7957825639082946	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_comp_hook.c.obj	c7a5d2e342b4265d
+2608	3642	7957825637830072	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_Settings.c.obj	c070151033e422fa
+2896	3716	7957825640723826	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_helpers.c.obj	4909576eb42be1b
+2983	3977	7957825641593348	esp-idf/main/CMakeFiles/__idf_main.dir/ui/ui_img_1396634952.c.obj	f5bc73e5605fd700
+3063	4101	7957825642392075	bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
+3063	4101	7957825642392075	bootloader/bootloader.elf	e13d8b55721908c8
+3063	4101	7957825642392075	bootloader/bootloader.bin	e13d8b55721908c8
+3063	4101	7957825642392075	bootloader/bootloader.map	e13d8b55721908c8
+3063	4101	7957825642392075	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-build	e13d8b55721908c8
+3063	4101	7957825642392075	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.elf	e13d8b55721908c8
+3063	4101	7957825642392075	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.bin	e13d8b55721908c8
+3063	4101	7957825642392075	C:/ESP PROJECTS/WaterTurbine/build/bootloader/bootloader.map	e13d8b55721908c8
+4102	4242	7957825652786855	bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
+4102	4242	7957825652786855	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-install	3b11eabf53d435cc
+3977	4439	7957825651526426	esp-idf/main/libmain.a	e46cb7e0215c2295
+4242	4822	7957825659792445	CMakeFiles/bootloader-complete	dad94e233ac750e4
+4242	4822	7957825659792445	bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
+4242	4822	7957825659792445	C:/ESP PROJECTS/WaterTurbine/build/CMakeFiles/bootloader-complete	dad94e233ac750e4
+4242	4822	7957825659792445	C:/ESP PROJECTS/WaterTurbine/build/bootloader-prefix/src/bootloader-stamp/bootloader-done	dad94e233ac750e4
+4439	14381	7957825754796362	esp-idf/esp_system/ld/sections.ld	3f93462691894747
+4439	14381	7957825754796362	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esp_system/ld/sections.ld	3f93462691894747
+14381	14492	7957825755573961	CMakeFiles/WaterTurbine.elf.dir/project_elf_src_esp32p4.c.obj	27a3983352bd885e
+14492	15718	7957825756672026	WaterTurbine.elf	9ec389da8cb0e711
+15718	16287	7957825774527178	.bin_timestamp	51f9d3b8b477ae52
+15718	16287	7957825774527178	C:/ESP PROJECTS/WaterTurbine/build/.bin_timestamp	51f9d3b8b477ae52
+16287	16439	7957825774629742	esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743
+16287	16439	7957825774629742	C:/ESP PROJECTS/WaterTurbine/build/esp-idf/esptool_py/CMakeFiles/app_check_size	f5e321ba90a85743

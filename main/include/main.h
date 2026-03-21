@@ -15,6 +15,12 @@
 #include "bsp_display.h"
 #include "bsp_illuminate.h"
 #include "bsp_i2c.h"
+#include "bsp_ads1115.h"
+#include "sensor.h"
+#include "pulse_controller.h"
+#include "bsp_ds3231.h"
+#include "bsp_sd.h"
+#include "data_logger.h"
 /*——————————————————————————————————————Header file declaration end——————————————————————————————————————*/
 
 /*——————————————————————————————————————————Variable declaration—————————————————————————————————————————*/

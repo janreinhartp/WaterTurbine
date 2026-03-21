@@ -92,4 +92,8 @@ C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_display/libbsp_display.a
 C:/ESP PROJECTS/WaterTurbine/build/esp-idf/espressif__esp_lcd_ek79007/libespressif__esp_lcd_ek79007.a
 C:/ESP PROJECTS/WaterTurbine/build/esp-idf/lvgl__lvgl/liblvgl__lvgl.a
 C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_illuminate/libbsp_illuminate.a
+C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_ads1115/libbsp_ads1115.a
+C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_pcnt/libbsp_pcnt.a
+C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_ds3231/libbsp_ds3231.a
+C:/ESP PROJECTS/WaterTurbine/build/esp-idf/bsp_sd/libbsp_sd.a
 C:/ESP PROJECTS/WaterTurbine/build/esp-idf/main/libmain.a
