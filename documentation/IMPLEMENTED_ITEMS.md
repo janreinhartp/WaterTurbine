@@ -247,9 +247,9 @@ Managed dependencies currently used:
 
 Implemented:
 
-- `gauges_controller_start()` — Creates a FreeRTOS task (`gauges_task`) at priority 4, stack 4096 bytes.
+- `gauges_controller_start()` — Creates a FreeRTOS task (`gauges_task`) at priority 2, stack 8192 bytes.
 - `gauges_task()` — Loops every 1000 ms, calling `update_values()`.
-- `update_values()` — Reads real voltage/ampere from the ADS1115 sensor module (with calibration), reads real flow rate/RPM from pulse counter sensors, generates pseudo-random value for Power, and pushes all data to both the Gauges screen (arcs + labels) and the Data screen (chart series + labels).
+- `update_values()` — Reads real voltage/ampere from the ADS1115 sensor module (with calibration), reads real flow rate/RPM from pulse counter sensors, computes Power as Voltage x Ampere, and pushes all data to both the Gauges screen (arcs + labels) and the Data screen (chart series + labels).
 - `init_data_chart()` — One-time setup that converts the SquareLine-generated bar chart to a line chart with 3 series, configures colors, Y-axis assignments, and shift mode.
 - `rand_range_u32()` — Utility to generate random values within a range.
 - `to_percent_u32()` — Utility to map a value to 0–100 percentage.
@@ -318,5 +318,4 @@ Implemented:
 - Settings value validation and persistence (NVS)
 - UI-triggered control of GPIO48 LED
 - Wi-Fi / Bluetooth connectivity
-- Data logging or export
 - OTA update flow (partition table supports it, firmware does not yet)

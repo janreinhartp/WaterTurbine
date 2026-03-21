@@ -143,7 +143,7 @@ All updates run inside a FreeRTOS task and use `lvgl_port_lock()` / `lvgl_port_u
 
 ## 10. Recommended Next LVGL Improvements
 
-- Replace pseudo-random data with real sensor drivers.
+- Add a time/date label showing DS3231 RTC time on the UI.
 - Add callbacks for Settings NEXT/BACK buttons.
 - Add visual feedback for Save success/failure.
 - Add bounds checking and formatting for numeric text input.

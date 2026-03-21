@@ -1,24 +1,26 @@
 # Usage Guide
 
-This guide explains how to build, flash, run, and extend the current WaterTurbine firmware.
+This guide explains how to build, flash, run, and extend the WaterTurbine firmware.
 
 ## 1. Prerequisites
 
-- ESP-IDF installed and exported in your shell
+- ESP-IDF v5.4.3 installed and exported in your shell
 - Target board connected and recognized by serial port
-- VS Code ESP-IDF extension (recommended)
+- VS Code with ESP-IDF extension (recommended)
+- FAT32-formatted SD card inserted in the board slot
 
 ## 2. Build and Flash
 
-## Option A: VS Code ESP-IDF Extension (Recommended)
+### Option A: VS Code ESP-IDF Extension (Recommended)
 
 Use command palette:
 
-1. `ESP-IDF: Build your project`
-2. `ESP-IDF: Flash your project`
-3. `ESP-IDF: Monitor your device`
+1. `ESP-IDF: Set Espressif Device Target` -> esp32p4
+2. `ESP-IDF: Build your project`
+3. `ESP-IDF: Flash your project`
+4. `ESP-IDF: Monitor your device`
 
-## Option B: Terminal Commands
+### Option B: Terminal Commands
 
 From project root:
 
@@ -32,20 +34,23 @@ Replace `<PORT>` with your COM port (example: `COM5`).
 
 ## 3. Runtime Startup Sequence
 
-At boot, the app currently executes this sequence:
+At boot, the app initializes hardware in this order:
 
-1. Initialize LDO channels
-2. Initialize I2C bus
-3. Initialize GT911 touch
-4. Initialize display + LVGL
-5. Turn on LCD backlight
-6. Initialize extra GPIO (LED pin)
-7. Initialize sensor subsystem (ADS1115 + default calibration)
+1. Initialize LDO channels (LDO3=2.5V, LDO4=3.3V)
+2. Initialize I2C bus (GPIO45 SDA, GPIO46 SCL, 400kHz)
+3. Initialize GT911 touch panel
+4. Initialize display + LVGL port
+5. Turn on LCD backlight (100% brightness)
+6. Initialize extra GPIO (GPIO48 LED, off)
+7. Initialize sensor subsystem (ADS1115 + default 2-point calibration)
 8. Initialize pulse controller (flow rate GPIO4, RPM GPIO5)
-9. Initialize UI screens and load Main Menu
-10. Start gauges controller task (1-second update loop)
+9. Initialize DS3231 RTC
+10. Initialize and mount SD card
+11. Initialize UI screens and load Main Menu
+12. Start gauges controller task (1-second update loop)
+13. Start data logger task (60-second CSV logging)
 
-If one stage fails, the app logs the module name in a loop for easy diagnosis.
+If any step fails, the app halts and logs the failing module name in a loop.
 
 ## 4. How To Use the Current UI
 
@@ -61,7 +66,7 @@ If one stage fails, the app logs the module name in a loop for easy diagnosis.
 - Voltage and Ampere read from ADS1115 ADC with 2-point calibration
 - Flow Rate read from YF-DN50 sensor via hardware pulse counter (GPIO4)
 - RPM read from hall sensor via hardware pulse counter (GPIO5)
-- Power still uses pseudo-random values
+- Power computed as Voltage x Ampere
 - All gauges update every 1 second
 - BACK returns to Main Menu
 - DATA opens Data page
@@ -69,7 +74,7 @@ If one stage fails, the app logs the module name in a loop for easy diagnosis.
 ### Data
 
 - Shows a live line chart with 3 series (Flow Rate, Voltage, Ampere) in a 20-point rolling window
-- Five metric summary labels update every 1 second
+- Five metric summary labels (Flow Rate, Voltage, Ampere, Power, RPM) update every 1 second
 - BACK returns to Main Menu
 
 ### Settings
@@ -80,16 +85,28 @@ If one stage fails, the app logs the module name in a loop for easy diagnosis.
 
 ## 5. How Values Are Updated at Runtime
 
-The `gauges_controller` module (`main/gauges_controller.c`) runs a FreeRTOS task that:
+The `gauges_controller` module (`main/gauges_controller.c`) runs a FreeRTOS task at priority 2, stack 8192 bytes, that:
 
 1. Reads voltage and ampere from the ADS1115 via the sensor module (with 2-point calibration applied).
 2. Reads flow rate and RPM from pulse counter sensors via the pulse controller.
-3. Generates pseudo-random value for Power.
+3. Computes Power = Voltage x Ampere.
 4. Updates gauge arcs (percentage) and value labels on the Gauges screen.
 5. Pushes new data points to the line chart and updates metric labels on the Data screen.
 6. Repeats every 1 second.
 
 All LVGL calls are wrapped in `lvgl_port_lock()` / `lvgl_port_unlock()` for thread safety.
+
+### Data Logger
+
+The `data_logger` module (`main/data_logger.c`) runs a separate FreeRTOS task at priority 1, stack 4096 bytes, that:
+
+1. Reads the current time from the DS3231 RTC.
+2. Reads all sensor values (voltage, ampere, flow rate, RPM).
+3. Computes Power = Voltage x Ampere.
+4. Appends a CSV row to `/sdcard/datalog.csv` with all values at 3 decimal places.
+5. Repeats every 60 seconds.
+
+The CSV header is written automatically when the file does not exist. Time format: `d-mmm-yyyy h-mm`.
 
 ### Calibration
 
@@ -117,21 +134,34 @@ Flow rate and RPM use hardware pulse counters (PCNT peripheral) configured in `m
 - **YF-DN50 flow sensor** (GPIO4): Default factor = 3.5 Hz per L/min. Adjust with `pulse_controller_set_flow_factor()`.
 - **Hall sensor** (GPIO5): Default = 1 pulse per revolution. Adjust with `pulse_controller_set_rpm_ppr()`.
 
-To replace remaining pseudo-random data (Power), add a driver and modify `update_values()` in `gauges_controller.c`.
+### DS3231 RTC
+
+The RTC keeps time with battery backup. To set the initial time:
+
+```c
+ds3231_time_t t = {
+    .year = 2026, .month = 3, .date = 21,
+    .hours = 14, .minutes = 30, .seconds = 0,
+    .day = 6  // Saturday
+};
+ds3231_set_time(&t);
+```
+
+The data logger reads time automatically via `ds3231_get_time()`.
 
 ## 6. How To Extend the Project
 
-1. Add sensor read module in `peripheral/` or `main/`.
-2. Parse/scale raw values.
-3. Add calibration and integrate into `gauges_controller.c` `update_values()` (see voltage/ampere for pattern).
-4. If settings are needed, connect `NEXT/BACK/SAVE` button callbacks.
-5. Save settings/calibration to NVS if persistence is required.
+1. **Add a new sensor:** Create a BSP driver in `peripheral/` following the bsp_ads1115 or bsp_ds3231 pattern. Add to `main/CMakeLists.txt` REQUIRES.
+2. **Add a new application module:** Create `.c` in `main/` and `.h` in `main/include/`. The CMake GLOB picks it up automatically.
+3. **Integrate into UI updates:** Modify `update_values()` in `gauges_controller.c` to read your new sensor and update UI widgets.
+4. **Integrate into data logging:** Modify `logger_task()` in `data_logger.c` to include new data columns.
+5. **Add settings persistence:** Wire the Settings screen buttons to NVS read/write for calibration values.
 
 ## 7. Troubleshooting
 
-- No display/backlight:
-  - Check LDO init, display init, and backlight GPIO31 PWM path.
-- No touch response:
-  - Check I2C init and GT911 RST/INT pin wiring/config.
-- App stuck printing init error:
-  - The module name in log indicates the failed initialization stage.
+- **App stuck printing init error:** The module name in the log indicates the failed initialization stage.
+- **No display/backlight:** Check LDO init, display init, and backlight GPIO31 PWM path.
+- **No touch response:** Check I2C init and GT911 RST/INT pin wiring.
+- **SD card mount failed:** Ensure the card is FAT32 formatted and properly inserted. Check GPIO43/44/39 connections.
+- **No CSV data logged:** Ensure DS3231 RTC is responding (check I2C address 0x68) and SD card is mounted.
+- **Incorrect sensor values:** Adjust 2-point calibration values in `main.c` to match your hardware.
