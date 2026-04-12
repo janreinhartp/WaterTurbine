@@ -36,6 +36,9 @@ extern lv_obj_t * ui_lblRpmValue;
 extern void ui_event_btnDataBack(lv_event_t * e);
 extern lv_obj_t * ui_btnDataBack;
 extern lv_obj_t * ui_Label8;
+extern lv_obj_t * ui_RPM1;
+extern lv_obj_t * ui_lblRpm1;
+extern lv_obj_t * ui_lblTimeValue;
 // CUSTOM VARIABLES
 extern lv_obj_t * uic_Data;
 extern lv_obj_t * uic_FlowRate;
@@ -54,6 +57,7 @@ extern lv_obj_t * uic_RPM;
 extern lv_obj_t * uic_lblRpm;
 extern lv_obj_t * uic_lblRpmValue;
 extern lv_obj_t * uic_btnDataBack;
+extern lv_obj_t * uic_lblTimeValue;
 
 #ifdef __cplusplus
 } /*extern "C"*/

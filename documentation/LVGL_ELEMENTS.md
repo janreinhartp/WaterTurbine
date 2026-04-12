@@ -67,7 +67,7 @@ lv_label_set_text(ui_gPowerValue, "126 W");
 
 Chart elements:
 
-- `ui_Chart1` (line chart — converted from bar to line at runtime by `gauges_controller`)
+- `ui_Chart1` (line chart — SquareLine series are removed and recreated at runtime by `gauges_controller` with 4 LVGL-managed series)
 - `ui_Chart1_Xaxis`
 - `ui_Chart1_Yaxis1`
 - `ui_Chart1_Yaxis2`
@@ -79,6 +79,7 @@ Metric label groups:
 - Ampere: `ui_lblAmpereValue`
 - Power: `ui_lblPowerValue`
 - RPM: `ui_lblRpmValue`
+- Time: `ui_lblTimeValue`
 
 Buttons:
 
@@ -98,11 +99,15 @@ Editable controls:
 - `ui_txtbSettingsCurrentValue` (single-line text area)
 - `ui_Keyboard2` (numeric keyboard)
 
+Labels:
+
+- `ui_lblCurrentSettings` ("FLOW RATE CALIBRATION")
+
 Buttons:
 
-- `ui_btnSettingsSave` (implemented callback: returns Main Menu)
-- `ui_btnSettingsNext` (no callback yet)
-- `ui_btnSettingsBack` (no callback yet)
+- `ui_btnSettingsSave` (implemented callback: returns Main Menu with 500ms fade)
+- `ui_btnSettingsNext` (hidden, no callback)
+- `ui_btnSettingsBack` (hidden, no callback)
 
 Keyboard binding is already configured:
 
@@ -136,15 +141,14 @@ The `gauges_controller` module already provides live updates to all metric widge
 
 - **Gauge arcs** — `lv_arc_set_value()` with percentage-mapped values every 1 second
 - **Gauge labels** — `lv_label_set_text()` with formatted strings (e.g., `"24.3 V"`)
-- **Data chart** — `lv_chart_set_next_value()` on 3 line series (FlowRate, Voltage, Ampere) in shift mode
-- **Data labels** — `lv_label_set_text()` for all 5 metric panels
+- **Data chart** — `lv_chart_set_next_value()` on 4 line series (Voltage, Ampere, FlowRate, RPM) in shift mode
+- **Data labels** — `lv_label_set_text()` for all 5 metric panels plus RTC time
 
 All updates run inside a FreeRTOS task and use `lvgl_port_lock()` / `lvgl_port_unlock()` for thread safety.
 
 ## 10. Recommended Next LVGL Improvements
 
-- Add a time/date label showing DS3231 RTC time on the UI.
-- Add callbacks for Settings NEXT/BACK buttons.
+- Add callbacks for Settings NEXT/BACK buttons (currently hidden).
 - Add visual feedback for Save success/failure.
 - Add bounds checking and formatting for numeric text input.
 - Consider adding a status bar or notification area for system events.

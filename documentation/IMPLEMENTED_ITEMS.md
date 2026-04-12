@@ -15,7 +15,7 @@ Implemented in `main/main.c`:
 - LCD backlight enable with brightness set to 100 in app startup flow
 - Extra GPIO initialization for an LED output on GPIO48, default state OFF
 - UI initialization by calling `ui_init()`
-- Sensor subsystem initialization (ADS1115 for voltage and current)
+- Sensor subsystem initialization (INA219 for voltage and current)
 - Default 2-point calibration applied for voltage and ampere channels
 - Pulse controller initialization (flow rate on GPIO4, RPM on GPIO5)
 - DS3231 RTC initialization over I2C
@@ -25,7 +25,10 @@ Implemented in `main/main.c`:
 
 Error handling behavior:
 
-- Any failed init stage enters a loop and logs an error once per second.
+- Critical init failures (LDO, I2C, touch, display) return early from `system_init()`.
+- Non-critical init failures (GPIO48, sensor, pulse controller, DS3231, SD card) are collected in a startup error buffer.
+- After UI init, startup errors are displayed on the Main Menu `ui_lblErrorStartUp` label in red text.
+- If all systems pass, the label shows "All systems OK" in green.
 
 ## 2. BSP / Peripheral Modules
 
@@ -88,16 +91,21 @@ Implemented:
 - GPIO48 output initialization (`gpio_extra_init`)
 - GPIO48 level set helper (`gpio_extra_set_level`)
 
-### ADS1115 ADC (`peripheral/bsp_ads1115`)
+### INA219 Current/Power Monitor (`peripheral/bsp_ina219`)
 
 Implemented:
 
-- ADS1115 16-bit ADC initialization over I2C (`ads1115_init`)
-- Single-shot read on any channel with configurable PGA gain (`ads1115_read_raw`)
-- Raw-to-voltage conversion (`ads1115_raw_to_voltage`)
-- Supports all 4 single-ended channels and 6 PGA gain settings
+- INA219 initialization over I2C with device reset and calibration register programming (`ina219_init`)
+- Bus voltage reading (`ina219_read_bus_voltage`) — voltage across the load in volts
+- Shunt voltage reading (`ina219_read_shunt_voltage`) — voltage across shunt resistor in millivolts
+- Current reading via hardware current register (`ina219_read_current`) — computed by INA219 from shunt voltage and calibration
+- Power reading via hardware power register (`ina219_read_power`) — computed by INA219 from bus voltage and current
+- Configurable bus voltage range (16V/32V), PGA gain (±40/80/160/320 mV), ADC resolution (9–12 bit), and averaging (2–128 samples)
+- Supports continuous and triggered measurement modes
 
-Default I2C address: 0x48 (ADDR pin to GND)
+Default configuration: 32V bus range, ±320 mV shunt range, 12-bit ADC, 0.1 Ω shunt resistor, 3.2A max current
+
+Default I2C address: 0x40 (A0=GND, A1=GND)
 
 ### Pulse Counter (`peripheral/bsp_pcnt`)
 
@@ -181,7 +189,7 @@ Implemented in `main/ui/ui_Gauges.c`:
 
 Runtime data behavior:
 
-- Voltage and Ampere are read from the ADS1115 ADC with 2-point calibration applied.
+- Voltage and Ampere are read from the INA219 current/power monitor with 2-point calibration applied.
 - Flow Rate is read from YF-DN50 sensor via PCNT on GPIO4 (default factor: 3.5 Hz per L/min).
 - RPM is read from hall sensor via PCNT on GPIO5 (default: 1 pulse per revolution).
 - Power is computed as Voltage × Ampere (real calculation).
@@ -192,24 +200,27 @@ Runtime data behavior:
 
 Implemented in `main/ui/ui_Data.c`:
 
-- Bar chart (`lv_chart`) with 3 series and axis scales
+- Line chart (`lv_chart`) with 4 series and dual Y-axes
 - Metric panels with labels/values:
   - Flow rate
   - Voltage
   - Ampere
   - Power
   - RPM
+  - Time (RTC)
+  - RPM
 - BACK button to Main Menu
 
 Runtime data behavior:
 
-- The chart is converted from BAR to LINE type at runtime by `init_data_chart()` in `gauges_controller.c`.
-- Three line chart series are displayed in a 20-point rolling window:
-  - Flow Rate (green, `#13C56D`) on primary Y-axis (0–30)
-  - Voltage (red, `#D62323`) on secondary Y-axis (0–20)
-  - Ampere (yellow, `#F3E913`) on secondary Y-axis (0–20)
+- The SquareLine-generated chart series are removed and recreated at runtime by `init_data_chart()` in `gauges_controller.c` with LVGL-managed arrays.
+- Four line chart series are displayed in a 20-point rolling window:
+  - Voltage (red, `#F60707`) on primary Y-axis
+  - Ampere (blue, `#0D06E9`) on primary Y-axis
+  - Flow Rate (yellow, `#F3E913`) on secondary Y-axis
+  - RPM (grey, `#808080`) on secondary Y-axis
 - Chart uses shift mode (oldest points removed as new data arrives).
-- All five metric labels (Flow Rate, Voltage, Ampere, Power, RPM) update every 1 second.
+- All five metric labels (Flow Rate, Voltage, Ampere, Power, RPM) and a time label (RTC) update every 1 second.
 
 ### Settings Screen
 
@@ -225,8 +236,8 @@ Implemented in `main/ui/ui_Settings.c`:
 
 Current behavior:
 
-- `SAVE` button has an event handler and returns to Main Menu.
-- `NEXT` and `BACK` buttons are created but have no event callback attached.
+- `SAVE` button has an event handler and returns to Main Menu with a 500ms fade animation.
+- `NEXT` and `BACK` buttons are created but hidden (`LV_OBJ_FLAG_HIDDEN`) and have no event callback attached.
 - No parameter persistence (NVS/file) is implemented yet.
 
 ## 4. Build Integration
@@ -249,32 +260,44 @@ Implemented:
 
 - `gauges_controller_start()` — Creates a FreeRTOS task (`gauges_task`) at priority 2, stack 8192 bytes.
 - `gauges_task()` — Loops every 1000 ms, calling `update_values()`.
-- `update_values()` — Reads real voltage/ampere from the ADS1115 sensor module (with calibration), reads real flow rate/RPM from pulse counter sensors, computes Power as Voltage x Ampere, and pushes all data to both the Gauges screen (arcs + labels) and the Data screen (chart series + labels).
-- `init_data_chart()` — One-time setup that converts the SquareLine-generated bar chart to a line chart with 3 series, configures colors, Y-axis assignments, and shift mode.
+- `update_values()` — Reads real voltage/ampere from the INA219 sensor module (with calibration), reads real flow rate/RPM from pulse counter sensors, computes Power as Voltage x Ampere, and pushes all data to both the Gauges screen (arcs + labels) and the Data screen (chart series + labels).
+- `init_data_chart()` — One-time setup that removes all SquareLine demo series (which use small external arrays) and recreates 4 series with LVGL-managed internal arrays:
+  - Voltage (red `#F60707`) on primary Y-axis
+  - Ampere (blue `#0D06E9`) on primary Y-axis
+  - Flow (yellow `#F3E913`) on secondary Y-axis
+  - RPM (grey `#808080`) on secondary Y-axis
 - `rand_range_u32()` — Utility to generate random values within a range.
 - `to_percent_u32()` — Utility to map a value to 0–100 percentage.
+- Also updates `ui_lblTimeValue` on the Data screen with the current RTC time (`HH:MM:SS` format).
 
-Voltage and Ampere now read from ADS1115 with 2-point calibration. Flow Rate and RPM read from PCNT-based pulse sensors. Power is computed from Voltage × Ampere.
+Voltage and Ampere read from INA219 with 2-point calibration. Flow Rate and RPM read from PCNT-based pulse sensors. Power is computed from Voltage × Ampere.
+
+Arc gauge percentage ranges:
+- Voltage: 10.0V–30.0V → 0–100%
+- Ampere: 0–20.0A → 0–100%
+- RPM: 200–1200 → 0–100%
+- Power: 0–500W → 0–100%
+- Flow: 0–20.0 L/M → 0–100%
 
 ## 6. Sensor Module (`main/sensor.c`)
 
 Implemented:
 
-- `sensor_init()` — Initializes the ADS1115 at address 0x48.
-- `sensor_read_voltage()` — Reads ADS1115 channel 0 (AIN0), applies 2-point calibration, returns calibrated voltage in volts.
-- `sensor_read_ampere()` — Reads ADS1115 channel 1 (AIN1), applies 2-point calibration, returns calibrated current in amps.
+- `sensor_init()` — Initializes the INA219 at address 0x40 with default configuration.
+- `sensor_read_voltage()` — Reads INA219 bus voltage, applies 2-point calibration, returns calibrated voltage in volts.
+- `sensor_read_ampere()` — Reads INA219 current register, applies 2-point calibration, returns calibrated current in amps.
 - `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()` — Set 2-point calibration data.
 
 2-point calibration:
 
-- Maps two known (raw ADC voltage, actual physical value) pairs to a linear function.
+- Maps two known (raw sensor reading, actual physical value) pairs to a linear function.
 - Formula: `actual = slope * raw + offset` where `slope = (actual2 - actual1) / (raw2 - raw1)`.
 - Default calibration set in `main.c` during startup:
-  - Voltage: 0V ADC → 0V, 4.0V ADC → 30.0V
-  - Ampere: 0V ADC → 0A, 4.0V ADC → 20.0A
-- Calibration values should be adjusted to match actual voltage divider / current sensor hardware.
+  - Voltage: 0V → 0V, 32V → 32V (identity — INA219 reads bus voltage directly)
+  - Ampere: 0A → 0A, 3.2A → 3.2A (identity — INA219 computes current from shunt)
+- Calibration values can be adjusted if external scaling is needed.
 
-PGA gain: ±4.096V for both channels.
+INA219 default config: 32V bus range, ±320 mV shunt, 12-bit ADC, 0.1 Ω shunt, 3.2A max.
 
 ## 7. Pulse Controller (`main/pulse_controller.c`)
 
@@ -299,17 +322,18 @@ Sensors:
 
 Implemented:
 
-- `data_logger_start()` — Creates a FreeRTOS task (`data_logger`) at priority 1, stack 4096 bytes.
-- Logs to `/sdcard/datalog.csv` every 60 seconds.
-- Writes CSV header automatically on first run: `Time,Flow Rate,RPM,Voltage,Ampere,Power`
-- Time column format: `d-mmm-yyyy h-mm` (e.g. `21-Mar-2026 14-35`), read from DS3231 RTC.
-- All numeric values formatted with 3 decimal places (e.g. `12.340,850.000,24.500,5.100,124.950`).
+- `data_logger_start()` — Creates a FreeRTOS task (`data_logger`) at priority 5, stack 8192 bytes, pinned to core 1.
+- Logs to `/sdcard/log.csv` every 1 second.
+- Writes CSV header automatically on first run (if SD is mounted): `Timestamp,Voltage,Ampere,Power,RPM,Flow`
+- Time column format: `d-mmm-yyyy h:mm:ss` (e.g. `21-Mar-2026 14:35:07`), read from DS3231 RTC.
+- All numeric values formatted with 3 decimal places; RPM with 1 decimal place.
 - Reads voltage/ampere from sensor module, flow/RPM from pulse controller, computes Power = Voltage × Ampere.
+- Checks `sd_is_mounted()` before writing to SD card.
+- Also logs each row to serial console via `ESP_LOGI`.
 - Skips row if RTC read fails.
 
 ## 9. What Is Not Yet Implemented (Observed Gaps)
 
-- RTC time display on UI (DS3231 driver is ready but no UI label wired yet)
 - CSV log file management (rotation, size limits, deletion)
 - Flow factor / RPM PPR persistence (NVS) — currently hardcoded defaults
 - Calibration persistence (NVS) — calibration is currently hardcoded at startup

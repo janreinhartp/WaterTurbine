@@ -5,6 +5,7 @@
 
 #include "ui.h"
 
+lv_obj_t * uic_lblTimeValue;
 lv_obj_t * uic_btnDataBack;
 lv_obj_t * uic_lblRpmValue;
 lv_obj_t * uic_lblRpm;
@@ -44,6 +45,9 @@ lv_obj_t * ui_lblRpm = NULL;
 lv_obj_t * ui_lblRpmValue = NULL;
 lv_obj_t * ui_btnDataBack = NULL;
 lv_obj_t * ui_Label8 = NULL;
+lv_obj_t * ui_RPM1 = NULL;
+lv_obj_t * ui_lblRpm1 = NULL;
+lv_obj_t * ui_lblTimeValue = NULL;
 // event funtions
 void ui_event_btnDataBack(lv_event_t * e)
 {
@@ -69,7 +73,7 @@ void ui_Data_screen_init(void)
     lv_obj_set_align(ui_Chart1, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_Chart1, LV_OBJ_FLAG_OVERFLOW_VISIBLE);      //make scales visible - Should it be forced to True?
     //lv_obj_remove_flag( ui_Chart1, LV_OBJ_FLAG_SCROLLABLE );    //no chart-zoom in LVGL9 - Shouldn't it be forced to False?
-    lv_chart_set_type(ui_Chart1, LV_CHART_TYPE_BAR);
+    lv_chart_set_type(ui_Chart1, LV_CHART_TYPE_LINE);
     lv_chart_set_range(ui_Chart1, LV_CHART_AXIS_PRIMARY_Y, 0, 50);
     lv_chart_set_range(ui_Chart1, LV_CHART_AXIS_SECONDARY_Y, 0, 50);
 
@@ -116,18 +120,31 @@ void ui_Data_screen_init(void)
     lv_scale_set_range(ui_Chart1_Yaxis2,  0, 50);
     lv_scale_set_total_tick_count(ui_Chart1_Yaxis2, (5 > 0 ? 5 - 1 : 0) * 2 + 1);
     lv_scale_set_major_tick_every(ui_Chart1_Yaxis2, 2 >= 1 ? 2 : 1);
-    lv_chart_series_t * ui_Chart1_series_1 = lv_chart_add_series(ui_Chart1, lv_color_hex(0x13C56D),
+    lv_chart_series_t * ui_Chart1_series_1 = lv_chart_add_series(ui_Chart1, lv_color_hex(0xF60707),
                                                                  LV_CHART_AXIS_PRIMARY_Y);
     static lv_coord_t ui_Chart1_series_1_array[] = { 0, 10, 20, 40, 0, 0, 40, 20, 10, 0 };
     lv_chart_set_ext_y_array(ui_Chart1, ui_Chart1_series_1, ui_Chart1_series_1_array);
-    lv_chart_series_t * ui_Chart1_series_2 = lv_chart_add_series(ui_Chart1, lv_color_hex(0xD62323),
-                                                                 LV_CHART_AXIS_SECONDARY_Y);
+    lv_chart_series_t * ui_Chart1_series_2 = lv_chart_add_series(ui_Chart1, lv_color_hex(0x0D06E9),
+                                                                 LV_CHART_AXIS_PRIMARY_Y);
     static lv_coord_t ui_Chart1_series_2_array[] = { 0, 10, 20, 40, 0, 0, 0, 40, 20, 10, 0, 0 };
     lv_chart_set_ext_y_array(ui_Chart1, ui_Chart1_series_2, ui_Chart1_series_2_array);
     lv_chart_series_t * ui_Chart1_series_3 = lv_chart_add_series(ui_Chart1, lv_color_hex(0xF3E913),
                                                                  LV_CHART_AXIS_SECONDARY_Y);
     static lv_coord_t ui_Chart1_series_3_array[] = { 0, 10, 20, 40, 0, 20, 40, 20, 10, 0, 10 };
     lv_chart_set_ext_y_array(ui_Chart1, ui_Chart1_series_3, ui_Chart1_series_3_array);
+    lv_chart_series_t * ui_Chart1_series_4 = lv_chart_add_series(ui_Chart1, lv_color_hex(0x808080),
+                                                                 LV_CHART_AXIS_SECONDARY_Y);
+    static lv_coord_t ui_Chart1_series_4_array[] = { 0, 10, 20, 2, 0, 0, 0, 40, 20, 10, 0, 0 };
+    lv_chart_set_ext_y_array(ui_Chart1, ui_Chart1_series_4, ui_Chart1_series_4_array);
+
+    lv_obj_set_style_line_width(ui_Chart1, 5, LV_PART_ITEMS | LV_STATE_DEFAULT);
+    lv_obj_set_style_line_rounded(ui_Chart1, true, LV_PART_ITEMS | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_outline_color(ui_Chart1, lv_color_hex(0x010101), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_opa(ui_Chart1, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(ui_Chart1, 5, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_pad(ui_Chart1, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_size(ui_Chart1, 10, 10, LV_PART_INDICATOR | LV_STATE_DEFAULT);
 
     lv_obj_set_style_text_color(ui_Chart1_Xaxis, lv_color_hex(0x808080), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_Chart1_Xaxis, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -315,6 +332,33 @@ void ui_Data_screen_init(void)
     lv_obj_set_align(ui_Label8, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label8, "BACK");
 
+    ui_RPM1 = lv_obj_create(ui_Data);
+    lv_obj_remove_style_all(ui_RPM1);
+    lv_obj_set_width(ui_RPM1, 194);
+    lv_obj_set_height(ui_RPM1, 45);
+    lv_obj_set_x(ui_RPM1, 360);
+    lv_obj_set_y(ui_RPM1, 60);
+    lv_obj_set_align(ui_RPM1, LV_ALIGN_CENTER);
+    lv_obj_remove_flag(ui_RPM1, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_lblRpm1 = lv_label_create(ui_RPM1);
+    lv_obj_set_width(ui_lblRpm1, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_lblRpm1, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_lblRpm1, 0);
+    lv_obj_set_y(ui_lblRpm1, -13);
+    lv_obj_set_align(ui_lblRpm1, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_lblRpm1, "Time");
+    lv_obj_set_style_text_font(ui_lblRpm1, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_lblTimeValue = lv_label_create(ui_RPM1);
+    lv_obj_set_width(ui_lblTimeValue, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_lblTimeValue, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_lblTimeValue, 0);
+    lv_obj_set_y(ui_lblTimeValue, 15);
+    lv_obj_set_align(ui_lblTimeValue, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_lblTimeValue, "Current Time");
+    lv_obj_set_style_text_font(ui_lblTimeValue, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_add_event_cb(ui_btnDataBack, ui_event_btnDataBack, LV_EVENT_ALL, NULL);
     uic_Data = ui_Data;
     uic_FlowRate = ui_FlowRate;
@@ -333,6 +377,7 @@ void ui_Data_screen_init(void)
     uic_lblRpm = ui_lblRpm;
     uic_lblRpmValue = ui_lblRpmValue;
     uic_btnDataBack = ui_btnDataBack;
+    uic_lblTimeValue = ui_lblTimeValue;
 
 }
 
@@ -377,5 +422,9 @@ void ui_Data_screen_destroy(void)
     uic_btnDataBack = NULL;
     ui_btnDataBack = NULL;
     ui_Label8 = NULL;
+    ui_RPM1 = NULL;
+    ui_lblRpm1 = NULL;
+    uic_lblTimeValue = NULL;
+    ui_lblTimeValue = NULL;
 
 }

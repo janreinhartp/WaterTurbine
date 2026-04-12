@@ -4,6 +4,7 @@
 // Project name: DataGathering
 
 #include "ui.h"
+#include "settings_controller.h"
 
 lv_obj_t * uic_btnSettingsBack;
 lv_obj_t * uic_btnSettingsSave;
@@ -40,8 +41,8 @@ void ui_Settings_screen_init(void)
 {
     ui_Settings = lv_obj_create(NULL);
     lv_obj_remove_flag(ui_Settings, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_image_src(ui_Settings, &ui_img_1396634952, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_image_opa(ui_Settings, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_Settings, lv_color_hex(0x0E0E1A), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_Settings, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_Label9 = lv_label_create(ui_Settings);
     lv_obj_set_width(ui_Label9, LV_SIZE_CONTENT);   /// 1
@@ -51,13 +52,14 @@ void ui_Settings_screen_init(void)
     lv_obj_set_align(ui_Label9, LV_ALIGN_CENTER);
     lv_label_set_text(ui_Label9, "SETTINGS PAGE");
     lv_obj_set_style_text_font(ui_Label9, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(ui_Label9, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_SettingsContainer = lv_obj_create(ui_Settings);
     lv_obj_remove_style_all(ui_SettingsContainer);
     lv_obj_set_width(ui_SettingsContainer, 299);
     lv_obj_set_height(ui_SettingsContainer, 145);
-    lv_obj_set_x(ui_SettingsContainer, -298);
-    lv_obj_set_y(ui_SettingsContainer, -83);
+    lv_obj_set_x(ui_SettingsContainer, 0);
+    lv_obj_set_y(ui_SettingsContainer, -106);
     lv_obj_set_align(ui_SettingsContainer, LV_ALIGN_CENTER);
     lv_obj_remove_flag(ui_SettingsContainer, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
@@ -69,6 +71,7 @@ void ui_Settings_screen_init(void)
     lv_obj_set_align(ui_lblCurrentSettings, LV_ALIGN_CENTER);
     lv_label_set_text(ui_lblCurrentSettings, "FLOW RATE CALIBRATION");
     lv_obj_set_style_text_font(ui_lblCurrentSettings, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(ui_lblCurrentSettings, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_txtbSettingsCurrentValue = lv_textarea_create(ui_SettingsContainer);
     lv_obj_set_width(ui_txtbSettingsCurrentValue, 256);
@@ -81,10 +84,10 @@ void ui_Settings_screen_init(void)
 
     ui_Keyboard2 = lv_keyboard_create(ui_Settings);
     lv_keyboard_set_mode(ui_Keyboard2, LV_KEYBOARD_MODE_NUMBER);
-    lv_obj_set_width(ui_Keyboard2, 624);
-    lv_obj_set_height(ui_Keyboard2, 231);
-    lv_obj_set_x(ui_Keyboard2, -124);
-    lv_obj_set_y(ui_Keyboard2, 132);
+    lv_obj_set_width(ui_Keyboard2, 630);
+    lv_obj_set_height(ui_Keyboard2, 321);
+    lv_obj_set_x(ui_Keyboard2, -151);
+    lv_obj_set_y(ui_Keyboard2, 109);
     lv_obj_set_align(ui_Keyboard2, LV_ALIGN_CENTER);
 
     ui_btnSettingsNext = lv_button_create(ui_Settings);
@@ -93,7 +96,7 @@ void ui_Settings_screen_init(void)
     lv_obj_set_x(ui_btnSettingsNext, 230);
     lv_obj_set_y(ui_btnSettingsNext, -70);
     lv_obj_set_align(ui_btnSettingsNext, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_btnSettingsNext, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_add_flag(ui_btnSettingsNext, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_remove_flag(ui_btnSettingsNext, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     ui_Label10 = lv_label_create(ui_btnSettingsNext);
@@ -110,25 +113,20 @@ void ui_Settings_screen_init(void)
     lv_obj_set_align(ui_btnSettingsSave, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_btnSettingsSave, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_remove_flag(ui_btnSettingsSave, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_radius(ui_btnSettingsSave, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(ui_btnSettingsSave, lv_color_hex(0xD34D4D), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_btnSettingsSave, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_btnSettingsSave, lv_color_hex(0x1A1A2E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_btnSettingsSave, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_grad_color(ui_btnSettingsSave, lv_color_hex(0x891818), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_grad_dir(ui_btnSettingsSave, LV_GRAD_DIR_VER, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_color(ui_btnSettingsSave, lv_color_hex(0xB7B7B7), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_btnSettingsSave, lv_color_hex(0x2ECC71), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_btnSettingsSave, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_width(ui_btnSettingsSave, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_btnSettingsSave, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_side(ui_btnSettingsSave, LV_BORDER_SIDE_LEFT, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_color(ui_btnSettingsSave, lv_color_hex(0xAD7171), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_opa(ui_btnSettingsSave, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_width(ui_btnSettingsSave, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_spread(ui_btnSettingsSave, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_offset_x(ui_btnSettingsSave, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_shadow_offset_y(ui_btnSettingsSave, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_shadow_width(ui_btnSettingsSave, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(ui_btnSettingsSave, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_btnSettingsSave, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(ui_btnSettingsSave, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_btnSettingsSave, &lv_font_montserrat_46, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_btnSettingsSave, lv_color_hex(0x2D2D44), LV_PART_MAIN | LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(ui_btnSettingsSave, 255, LV_PART_MAIN | LV_STATE_PRESSED);
 
     ui_Label7 = lv_label_create(ui_btnSettingsSave);
     lv_obj_set_width(ui_Label7, LV_SIZE_CONTENT);   /// 1
@@ -142,7 +140,7 @@ void ui_Settings_screen_init(void)
     lv_obj_set_x(ui_btnSettingsBack, 0);
     lv_obj_set_y(ui_btnSettingsBack, -70);
     lv_obj_set_align(ui_btnSettingsBack, LV_ALIGN_CENTER);
-    lv_obj_add_flag(ui_btnSettingsBack, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_add_flag(ui_btnSettingsBack, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_remove_flag(ui_btnSettingsBack, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
     ui_Label11 = lv_label_create(ui_btnSettingsBack);
@@ -161,6 +159,8 @@ void ui_Settings_screen_init(void)
     uic_btnSettingsSave = ui_btnSettingsSave;
     uic_btnSettingsBack = ui_btnSettingsBack;
 
+    /* Hook calibration page controller */
+    settings_controller_on_screen_init();
 }
 
 void ui_Settings_screen_destroy(void)

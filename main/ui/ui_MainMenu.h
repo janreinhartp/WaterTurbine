@@ -27,11 +27,13 @@ extern lv_obj_t * ui_Label1;
 extern lv_obj_t * ui_label;
 extern lv_obj_t * ui_logo;
 extern lv_obj_t * ui_Label4;
+extern lv_obj_t * ui_lblErrorStartUp;
 // CUSTOM VARIABLES
 extern lv_obj_t * uic_MainMenu;
 extern lv_obj_t * uic_btnSettings;
 extern lv_obj_t * uic_btnData;
 extern lv_obj_t * uic_btnGauges;
+extern lv_obj_t * uic_lblErrorStartUp;
 
 #ifdef __cplusplus
 } /*extern "C"*/

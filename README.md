@@ -5,11 +5,11 @@ Real-time water turbine monitoring system built on the **ESP32-P4** with a 9" to
 ## Features
 
 - **Live Dashboard** — 5 arc gauges (Voltage, Ampere, RPM, Power, Flow Rate) updated every 1 second
-- **Data Charts** — Rolling 20-point line chart with Flow Rate, Voltage, and Ampere series
-- **Real Sensors** — ADS1115 16-bit ADC for voltage/current, hardware pulse counters for flow and RPM
+- **Data Charts** — Rolling 20-point line chart with Voltage, Ampere, Flow Rate, and RPM series
+- **Real Sensors** — INA219 current/power monitor for voltage/current, hardware pulse counters for flow and RPM
 - **2-Point Calibration** — Linear calibration for voltage and ampere channels
 - **RTC Clock** — DS3231 real-time clock with battery backup
-- **SD Card Logging** — CSV data logged every 60 seconds with timestamped rows
+- **SD Card Logging** — CSV data logged every 1 second with timestamped rows
 - **Touch UI** — 4 screens (Main Menu, Gauges, Data, Settings) with LVGL 9.2.2
 
 ## Hardware
@@ -18,7 +18,7 @@ Real-time water turbine monitoring system built on the **ESP32-P4** with a 9" to
 |---|---|---|
 | **Display** | MIPI DSI | 1024x600 IPS (EK79007), backlight on GPIO31 |
 | **Touch** | I2C (0x5D) | GT911 capacitive, RST=GPIO40, INT=GPIO42 |
-| **ADS1115 ADC** | I2C (0x48) | 16-bit, voltage on AIN0, current on AIN1 |
+| **INA219 Monitor** | I2C (0x40) | Bus voltage + shunt current, 0.1Ω shunt, 32V/3.2A default |
 | **DS3231 RTC** | I2C (0x68) | Battery-backed clock + temperature sensor |
 | **YF-DN50 Flow Sensor** | GPIO4 | Pulse output, 3.5 Hz per L/min (default) |
 | **Hall Effect RPM Sensor** | GPIO5 | 1 pulse per revolution (default) |
@@ -30,7 +30,7 @@ Real-time water turbine monitoring system built on the **ESP32-P4** with a 9" to
 - SDA: GPIO45
 - SCL: GPIO46
 - Speed: 400 kHz
-- Shared by: GT911 touch (0x5D), ADS1115 (0x48), DS3231 (0x68)
+- Shared by: GT911 touch (0x5D), INA219 (0x40), DS3231 (0x68)
 
 ## Project Structure
 
@@ -39,9 +39,9 @@ WaterTurbine/
 ├── main/
 │   ├── main.c                  # App entry point and hardware init
 │   ├── gauges_controller.c     # 1-second UI update task
-│   ├── sensor.c                # ADS1115 voltage/ampere with calibration
+│   ├── sensor.c                # INA219 voltage/ampere with calibration
 │   ├── pulse_controller.c      # Flow rate and RPM from PCNT
-│   ├── data_logger.c           # CSV logging to SD card (60s interval)
+│   ├── data_logger.c           # CSV logging to SD card (1s interval)
 │   ├── include/
 │   │   ├── main.h
 │   │   ├── gauges_controller.h
@@ -59,7 +59,7 @@ WaterTurbine/
 │   ├── bsp_display/            # GT911 touch driver
 │   ├── bsp_illuminate/         # Display (MIPI DSI + LVGL) and backlight
 │   ├── bsp_extra/              # GPIO48 LED control
-│   ├── bsp_ads1115/            # ADS1115 16-bit ADC driver
+│   ├── bsp_ina219/             # INA219 current/power monitor driver
 │   ├── bsp_pcnt/               # Hardware pulse counter wrapper
 │   ├── bsp_ds3231/             # DS3231 RTC driver
 │   └── bsp_sd/                 # SD card (FAT32) driver
@@ -108,15 +108,15 @@ The firmware initializes hardware in this order:
 4. LCD display + LVGL port
 5. LCD backlight (100% brightness)
 6. GPIO48 LED (off)
-7. ADS1115 sensor subsystem + default calibration
+7. INA219 sensor subsystem + default calibration
 8. Pulse controller (flow=GPIO4, RPM=GPIO5)
 9. DS3231 RTC
 10. SD card mount
 11. UI initialization
 12. Gauges controller task (1-second loop)
-13. Data logger task (60-second CSV logging)
+13. Data logger task (1-second CSV logging)
 
-If any step fails, the firmware halts and logs the failing module name in a loop.
+Critical init failures halt startup. Non-critical failures are collected and displayed on the Main Menu.
 
 ## CSV Data Logging
 

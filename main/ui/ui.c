@@ -31,9 +31,7 @@ void ui_init(void)
                                                false, LV_FONT_DEFAULT);
     lv_disp_set_theme(dispp, theme);
     ui_MainMenu_screen_init();
-    ui_Gauges_screen_init();
-    ui_Data_screen_init();
-    ui_Settings_screen_init();
+    /* Other screens created lazily by _ui_screen_change() when navigated to */
     ui____initial_actions0 = lv_obj_create(NULL);
     lv_disp_load_scr(ui_MainMenu);
 }

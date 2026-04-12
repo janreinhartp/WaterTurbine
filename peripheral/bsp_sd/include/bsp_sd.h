@@ -31,6 +31,13 @@
 esp_err_t sd_init(void);
 
 /**
+ * @brief Check whether the SD card is currently mounted.
+ *
+ * @return true if mounted
+ */
+bool sd_is_mounted(void);
+
+/**
  * @brief Append a string to a file (creates if not existing).
  *
  * @param path  Full path including mount point, e.g. "/sdcard/log.csv"

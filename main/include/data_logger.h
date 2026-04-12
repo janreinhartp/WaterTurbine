@@ -10,10 +10,11 @@
 /**
  * @brief Start the CSV data-logger task.
  *
- * Logs Time, Flow Rate, RPM, Voltage, Ampere, Power to /sdcard/datalog.csv
- * every 60 seconds. All numeric values use 3 decimal places.
+ * Logs Timestamp, Voltage, Ampere, Power, RPM, Flow to /sdcard/log.csv
+ * every 1 second. Also outputs each row to serial console.
  *
- * Requires SD card and all sensors to be initialised before calling.
+ * Requires all sensors to be initialised before calling.
+ * SD card mount is checked at runtime before each write.
  *
  * @return ESP_OK on success
  */

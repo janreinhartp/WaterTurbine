@@ -4,8 +4,8 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
-#include "bsp_sd.h"
 #include "bsp_ds3231.h"
+#include "bsp_sd.h"
 #include "sensor.h"
 #include "pulse_controller.h"
 
@@ -13,10 +13,10 @@
 #include <string.h>
 
 #define LOGGER_TAG        "DATA_LOG"
-#define LOGGER_PERIOD_MS  (60 * 1000)
-#define CSV_PATH          SD_MOUNT_POINT "/datalog.csv"
-#define CSV_HEADER        "Time,Flow Rate,RPM,Voltage,Ampere,Power\n"
-#define LINE_BUF_SIZE     128
+#define LOGGER_PERIOD_MS  (1 * 1000)
+#define LOGGER_STACK_SIZE 8192
+#define LOG_FILE_PATH     SD_MOUNT_POINT "/log.csv"
+#define LOG_CSV_HEADER    "Timestamp,Voltage,Ampere,Power,RPM,Flow\n"
 
 static TaskHandle_t s_logger_task = NULL;
 
@@ -25,26 +25,29 @@ static const char *s_month_abbr[] = {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-/* Format: d-mmm-yyyy h-mm  (e.g. "21-Mar-2026 14-35") */
+/* Format: d-mmm-yyyy h:mm:ss  (e.g. "21-Mar-2026 14:35:07") */
 static void format_time(const ds3231_time_t *t, char *buf, size_t len)
 {
     uint8_t mi = t->month;
     if (mi < 1)  mi = 1;
     if (mi > 12) mi = 12;
 
-    snprintf(buf, len, "%u-%s-%04u %u-%02u",
+    snprintf(buf, len, "%u-%s-%04u %02u:%02u:%02u",
              t->date, s_month_abbr[mi - 1], t->year,
-             t->hours, t->minutes);
+             t->hours, t->minutes, t->seconds);
 }
 
 static void logger_task(void *arg)
 {
     (void)arg;
 
-    /* Write CSV header if the file does not yet exist */
-    if (!sd_file_exists(CSV_PATH)) {
-        if (sd_append_string(CSV_PATH, CSV_HEADER) != ESP_OK) {
-            ESP_LOGE(LOGGER_TAG, "Failed to write CSV header");
+    /* Verify the SD card is accessible by writing the CSV header */
+    if (sd_is_mounted() && !sd_file_exists(LOG_FILE_PATH)) {
+        esp_err_t hdr_err = sd_append_string(LOG_FILE_PATH, LOG_CSV_HEADER);
+        if (hdr_err != ESP_OK) {
+            ESP_LOGE(LOGGER_TAG, "Failed to create %s – is the SD card mounted?", LOG_FILE_PATH);
+        } else {
+            ESP_LOGI(LOGGER_TAG, "Created %s with header", LOG_FILE_PATH);
         }
     }
 
@@ -54,34 +57,36 @@ static void logger_task(void *arg)
         /* ---- Read RTC ---- */
         ds3231_time_t now = {0};
         if (ds3231_get_time(&now) != ESP_OK) {
-            ESP_LOGE(LOGGER_TAG, "RTC read failed, skipping row");
+            ESP_LOGE(LOGGER_TAG, "RTC read failed, skipping cycle");
             continue;
         }
 
-        /* ---- Read sensors ---- */
-        float voltage = 0.0f, ampere = 0.0f;
-        sensor_read_voltage(&voltage);
-        sensor_read_ampere(&ampere);
-
-        float flow = 0.0f, rpm = 0.0f;
-        pulse_controller_read(&flow, &rpm);
-
-        float power = voltage * ampere;
-
-        /* ---- Build CSV line ---- */
         char time_str[32];
         format_time(&now, time_str, sizeof(time_str));
 
-        char line[LINE_BUF_SIZE];
-        snprintf(line, sizeof(line),
-                 "%s,%.3f,%.3f,%.3f,%.3f,%.3f\n",
-                 time_str, flow, rpm, voltage, ampere, power);
+        /* ---- Read calibrated voltage & ampere ---- */
+        float voltage = 0.0f, ampere = 0.0f;
+        sensor_read_voltage(&voltage);
+        sensor_read_ampere(&ampere);
+        float power = voltage * ampere;
 
-        /* ---- Append to file ---- */
-        if (sd_append_string(CSV_PATH, line) == ESP_OK) {
-            ESP_LOGI(LOGGER_TAG, "Logged: %s", line);
-        } else {
-            ESP_LOGE(LOGGER_TAG, "Failed to append CSV row");
+        /* ---- Read flow rate & RPM ---- */
+        float flow = 0.0f, rpm = 0.0f;
+        pulse_controller_read(&flow, &rpm);
+
+        /* ---- Log to serial ---- */
+        ESP_LOGI(LOGGER_TAG, "[%s] V=%.3f A=%.3f P=%.3f RPM=%.1f Flow=%.3f",
+                 time_str, voltage, ampere, power, rpm, flow);
+
+        /* ---- Save to SD card ---- */
+        if (sd_is_mounted()) {
+            char csv_line[128];
+            snprintf(csv_line, sizeof(csv_line),
+                     "%s,%.3f,%.3f,%.3f,%.1f,%.3f\n",
+                     time_str, voltage, ampere, power, rpm, flow);
+            if (sd_append_string(LOG_FILE_PATH, csv_line) != ESP_OK) {
+                ESP_LOGE(LOGGER_TAG, "SD write failed");
+            }
         }
     }
 }
@@ -92,20 +97,21 @@ esp_err_t data_logger_start(void)
         return ESP_OK;
     }
 
-    BaseType_t rc = xTaskCreate(
+    BaseType_t rc = xTaskCreatePinnedToCore(
         logger_task,
         "data_logger",
-        4096,
+        LOGGER_STACK_SIZE,
         NULL,
-        tskIDLE_PRIORITY + 1,
-        &s_logger_task);
+        5,
+        &s_logger_task,
+        1);
 
     if (rc != pdPASS) {
         ESP_LOGE(LOGGER_TAG, "Failed to create data logger task");
         return ESP_FAIL;
     }
 
-    ESP_LOGI(LOGGER_TAG, "Data logger started (period=%d s, file=%s)",
-             LOGGER_PERIOD_MS / 1000, CSV_PATH);
+    ESP_LOGI(LOGGER_TAG, "Data logger started (period=%d s, serial output)",
+             LOGGER_PERIOD_MS / 1000);
     return ESP_OK;
 }

@@ -36,6 +36,11 @@ esp_err_t sd_init(void)
     return ESP_OK;
 }
 
+bool sd_is_mounted(void)
+{
+    return s_card != NULL;
+}
+
 /* ------------------------------------------------------------------ */
 esp_err_t sd_append_string(const char *path, const char *data)
 {
