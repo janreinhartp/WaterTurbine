@@ -168,10 +168,10 @@ static void init_data_chart(void)
 
 /* Read all sensors and pre-compute display values (called WITHOUT LVGL lock). */
 typedef struct {
-    uint32_t voltage_tenths;
-    uint32_t ampere_tenths;
+    uint32_t voltage_milli;
+    uint32_t ampere_milli;
     uint32_t power_w;
-    uint32_t flow_tenths;
+    uint32_t flow_milli;
     uint32_t rpm;
     uint8_t  time_h, time_m, time_s;
     uint8_t  date_day, date_month;
@@ -196,8 +196,8 @@ static void read_sensors(sensor_snapshot_t *snap)
     if (voltage_f < 0.0f) voltage_f = 0.0f;
     if (ampere_f  < 0.0f) ampere_f  = 0.0f;
 
-    snap->voltage_tenths = (uint32_t)(voltage_f * 10.0f + 0.5f);
-    snap->ampere_tenths  = (uint32_t)(ampere_f  * 10.0f + 0.5f);
+    snap->voltage_milli = (uint32_t)(voltage_f * 1000.0f + 0.5f);
+    snap->ampere_milli  = (uint32_t)(ampere_f  * 1000.0f + 0.5f);
     snap->power_w        = (uint32_t)(voltage_f * ampere_f + 0.5f);
 
     /* ---- Read real sensors for flow rate and RPM ---- */
@@ -207,7 +207,7 @@ static void read_sensors(sensor_snapshot_t *snap)
     if (flow_f < 0.0f) flow_f = 0.0f;
     if (rpm_f  < 0.0f) rpm_f  = 0.0f;
 
-    snap->flow_tenths = (uint32_t)(flow_f * 10.0f + 0.5f);
+    snap->flow_milli = (uint32_t)(flow_f * 1000.0f + 0.5f);
     snap->rpm         = (uint32_t)(rpm_f + 0.5f);
 
     /* ---- Read RTC time ---- */
@@ -228,23 +228,23 @@ static void read_sensors(sensor_snapshot_t *snap)
 /* Push pre-read sensor data to LVGL widgets (called WITH LVGL lock held). */
 static void update_ui(const sensor_snapshot_t *snap)
 {
-    uint32_t voltage_tenths = snap->voltage_tenths;
-    uint32_t ampere_tenths  = snap->ampere_tenths;
+    uint32_t voltage_milli = snap->voltage_milli;
+    uint32_t ampere_milli  = snap->ampere_milli;
     uint32_t power_w        = snap->power_w;
-    uint32_t flow_tenths    = snap->flow_tenths;
+    uint32_t flow_milli    = snap->flow_milli;
     uint32_t rpm            = snap->rpm;
 
     /* -------- Gauges screen arcs + labels -------- */
     if (ui_gVoltage && ui_gVoltageValue) {
-        lv_arc_set_value(ui_gVoltage, to_percent_u32(voltage_tenths, 100, 300));
-        lv_label_set_text_fmt(ui_gVoltageValue, "%lu.%lu V",
-                              voltage_tenths / 10, voltage_tenths % 10);
+        lv_arc_set_value(ui_gVoltage, to_percent_u32(voltage_milli, 1000, 30000));
+        lv_label_set_text_fmt(ui_gVoltageValue, "%lu.%03lu V",
+                              voltage_milli / 1000, voltage_milli % 1000);
     }
 
     if (ui_gAmpere && ui_gAmpereValue) {
-        lv_arc_set_value(ui_gAmpere, to_percent_u32(ampere_tenths, 0, 200));
-        lv_label_set_text_fmt(ui_gAmpereValue, "%lu.%lu A",
-                              ampere_tenths / 10, ampere_tenths % 10);
+        lv_arc_set_value(ui_gAmpere, to_percent_u32(ampere_milli, 0, 20000));
+        lv_label_set_text_fmt(ui_gAmpereValue, "%lu.%03lu A",
+                              ampere_milli / 1000, ampere_milli % 1000);
     }
 
     if (ui_gRPM && ui_gRpmValue) {
@@ -258,23 +258,23 @@ static void update_ui(const sensor_snapshot_t *snap)
     }
 
     if (ui_gWaterFlow && ui_gWaterFlowValue) {
-        lv_arc_set_value(ui_gWaterFlow, to_percent_u32(flow_tenths, 0, 200));
-        lv_label_set_text_fmt(ui_gWaterFlowValue, "%lu.%lu L/M",
-                              flow_tenths / 10, flow_tenths % 10);
+        lv_arc_set_value(ui_gWaterFlow, to_percent_u32(flow_milli, 0, 20000));
+        lv_label_set_text_fmt(ui_gWaterFlowValue, "%lu.%03lu L/M",
+                              flow_milli / 1000, flow_milli % 1000);
     }
 
     /* -------- Data screen labels -------- */
     if (ui_lblFlowRateValue) {
-        lv_label_set_text_fmt(ui_lblFlowRateValue, "%lu.%lu L/M",
-                              flow_tenths / 10, flow_tenths % 10);
+        lv_label_set_text_fmt(ui_lblFlowRateValue, "%lu.%03lu L/M",
+                              flow_milli / 1000, flow_milli % 1000);
     }
     if (ui_lblVoltageValue) {
-        lv_label_set_text_fmt(ui_lblVoltageValue, "%lu.%lu V",
-                              voltage_tenths / 10, voltage_tenths % 10);
+        lv_label_set_text_fmt(ui_lblVoltageValue, "%lu.%03lu V",
+                              voltage_milli / 1000, voltage_milli % 1000);
     }
     if (ui_lblAmpereValue) {
-        lv_label_set_text_fmt(ui_lblAmpereValue, "%lu.%lu A",
-                              ampere_tenths / 10, ampere_tenths % 10);
+        lv_label_set_text_fmt(ui_lblAmpereValue, "%lu.%03lu A",
+                              ampere_milli / 1000, ampere_milli % 1000);
     }
     if (ui_lblPowerValue) {
         lv_label_set_text_fmt(ui_lblPowerValue, "%lu W", power_w);
@@ -306,9 +306,9 @@ static void update_ui(const sensor_snapshot_t *snap)
         lv_chart_series_t *sf = sa ? lv_chart_get_series_next(ui_Chart1, sa) : NULL;
         lv_chart_series_t *sr = sf ? lv_chart_get_series_next(ui_Chart1, sf) : NULL;
         if (sv && sa && sf && sr) {
-            lv_chart_set_next_value(ui_Chart1, sv, (int32_t)(voltage_tenths / 10));
-            lv_chart_set_next_value(ui_Chart1, sa, (int32_t)(ampere_tenths / 10));
-            lv_chart_set_next_value(ui_Chart1, sf, (int32_t)(flow_tenths / 10));
+            lv_chart_set_next_value(ui_Chart1, sv, (int32_t)(voltage_milli / 1000));
+            lv_chart_set_next_value(ui_Chart1, sa, (int32_t)(ampere_milli / 1000));
+            lv_chart_set_next_value(ui_Chart1, sf, (int32_t)(flow_milli / 1000));
             lv_chart_set_next_value(ui_Chart1, sr, (int32_t)(rpm / 100));
         }
     }

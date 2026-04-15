@@ -84,19 +84,6 @@ static void system_init(void) {
     if (err != ESP_OK) append_startup_error("Sensor", err);
     MAIN_INFO("Sensor subsystem init success");
 
-    // Set default 2-point calibration (adjust these to your hardware)
-    // Voltage: INA219 reads ~1.0V offset with 0V applied
-    //   Point 1: raw 1.0V -> actual 0V  (zero-input offset)
-    //   Point 2: raw 33.0V -> actual 32V (preserves 1:1 gain)
-    sensor_cal_t voltage_cal = { .raw1 = 1.0f, .actual1 = 0.0f,
-                                 .raw2 = 33.0f, .actual2 = 32.0f };
-    sensor_set_voltage_cal(&voltage_cal);
-
-    // Ampere: INA219 current register maps directly (0A->0A, 3.2A->3.2A)
-    sensor_cal_t ampere_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
-                                .raw2 = 3.2f, .actual2 = 3.2f };
-    sensor_set_ampere_cal(&ampere_cal);
-
     // 8. Initialize pulse-based sensors (flow rate + RPM)
     MAIN_INFO("Initializing pulse controller (flow + RPM)...");
     err = pulse_controller_init();

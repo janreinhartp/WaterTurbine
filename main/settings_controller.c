@@ -33,61 +33,49 @@ static const lv_buttonmatrix_ctrl_t s_kb_ctrl_cal[] = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Page definitions                                                   */
+/*  Page definitions — 2-point reference calibration                   */
 /* ------------------------------------------------------------------ */
-/*  Each page edits one float value.  offset + gain per channel.       */
-/*  actual = (raw - offset) * gain                                     */
+/*  8 pages: for each channel (V / A) we edit four values:             */
+/*    RAW_REF_LOW, REF_LOW, RAW_REF_HIGH, REF_HIGH                    */
+/*  These map directly to sensor_cal_t:                                */
+/*    raw1 = RAW_REF_LOW,   actual1 = REF_LOW                         */
+/*    raw2 = RAW_REF_HIGH,  actual2 = REF_HIGH                        */
 
 typedef enum {
-    PAGE_VOLT_OFFSET = 0,
-    PAGE_VOLT_GAIN,
-    PAGE_AMP_OFFSET,
-    PAGE_AMP_GAIN,
+    PAGE_V_RAW_REF_LOW = 0,
+    PAGE_V_REF_LOW,
+    PAGE_V_RAW_REF_HIGH,
+    PAGE_V_REF_HIGH,
+    PAGE_A_RAW_REF_LOW,
+    PAGE_A_REF_LOW,
+    PAGE_A_RAW_REF_HIGH,
+    PAGE_A_REF_HIGH,
     PAGE_COUNT
 } settings_page_id_t;
 
+/* Whether the page relates to voltage (true) or ampere (false) */
+static const bool s_page_is_voltage[PAGE_COUNT] = {
+    true, true, true, true,
+    false, false, false, false,
+};
+
 static const char *s_page_labels[PAGE_COUNT] = {
-    "VOLTAGE OFFSET (V)",
-    "VOLTAGE GAIN",
-    "AMPERE OFFSET (A)",
-    "AMPERE GAIN",
+    "V RAW REF LOW",
+    "V REF LOW (actual V)",
+    "V RAW REF HIGH",
+    "V REF HIGH (actual V)",
+    "A RAW REF LOW",
+    "A REF LOW (actual A)",
+    "A RAW REF HIGH",
+    "A REF HIGH (actual A)",
 };
 
 static float  s_page_values[PAGE_COUNT];
 static int    s_current_page = 0;
 
-/* ------------------------------------------------------------------ */
-/*  Helpers: convert between offset/gain and sensor_cal_t              */
-/* ------------------------------------------------------------------ */
-/* sensor_cal_t → offset,gain:
- *   gain   = (actual2 − actual1) / (raw2 − raw1)
- *   offset = raw1 − actual1 / gain          (when actual1 == 0, offset == raw1)
- */
-static void cal_to_offset_gain(const sensor_cal_t *cal, float *offset, float *gain)
-{
-    float denom = cal->raw2 - cal->raw1;
-    if (fabsf(denom) < 1e-9f) {
-        *gain   = 1.0f;
-        *offset = cal->raw1;
-        return;
-    }
-    *gain   = (cal->actual2 - cal->actual1) / denom;
-    *offset = cal->raw1 - cal->actual1 / (*gain);
-}
-
-/* offset,gain → sensor_cal_t:
- *   raw1 = offset,  actual1 = 0
- *   raw2 = offset + 1,  actual2 = gain
- * Verification: slope = gain/1 = gain, intercept = 0 - gain*offset = −gain*offset
- *               actual = gain*(raw − offset) ✓
- */
-static void offset_gain_to_cal(float offset, float gain, sensor_cal_t *cal)
-{
-    cal->raw1    = offset;
-    cal->actual1 = 0.0f;
-    cal->raw2    = offset + 1.0f;
-    cal->actual2 = gain;
-}
+/* Dynamically created label for live raw readings */
+static lv_obj_t *s_lbl_raw_reading = NULL;
+static lv_timer_t *s_raw_timer = NULL;
 
 /* ------------------------------------------------------------------ */
 /*  Load current sensor calibration into page values                   */
@@ -98,10 +86,41 @@ static void load_current_cal(void)
     sensor_get_voltage_cal(&vcal);
     sensor_get_ampere_cal(&acal);
 
-    cal_to_offset_gain(&vcal, &s_page_values[PAGE_VOLT_OFFSET],
-                              &s_page_values[PAGE_VOLT_GAIN]);
-    cal_to_offset_gain(&acal, &s_page_values[PAGE_AMP_OFFSET],
-                              &s_page_values[PAGE_AMP_GAIN]);
+    s_page_values[PAGE_V_RAW_REF_LOW]  = vcal.raw1;
+    s_page_values[PAGE_V_REF_LOW]      = vcal.actual1;
+    s_page_values[PAGE_V_RAW_REF_HIGH] = vcal.raw2;
+    s_page_values[PAGE_V_REF_HIGH]     = vcal.actual2;
+
+    s_page_values[PAGE_A_RAW_REF_LOW]  = acal.raw1;
+    s_page_values[PAGE_A_REF_LOW]      = acal.actual1;
+    s_page_values[PAGE_A_RAW_REF_HIGH] = acal.raw2;
+    s_page_values[PAGE_A_REF_HIGH]     = acal.actual2;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Update the live raw reading label                                  */
+/* ------------------------------------------------------------------ */
+static void update_raw_reading_label(void)
+{
+    if (s_lbl_raw_reading == NULL) return;
+
+    float raw_v = 0.0f, raw_a = 0.0f;
+    sensor_read_raw_voltage(&raw_v);
+    sensor_read_raw_ampere(&raw_a);
+
+    char buf[64];
+    if (s_page_is_voltage[s_current_page]) {
+        snprintf(buf, sizeof(buf), "Raw V: %.4f", raw_v);
+    } else {
+        snprintf(buf, sizeof(buf), "Raw A: %.4f", raw_a);
+    }
+    lv_label_set_text(s_lbl_raw_reading, buf);
+}
+
+static void raw_timer_cb(lv_timer_t *timer)
+{
+    (void)timer;
+    update_raw_reading_label();
 }
 
 /* ------------------------------------------------------------------ */
@@ -113,15 +132,18 @@ static void show_page(int page)
     s_current_page = page;
 
     /* Update setting name label */
-    char header[48];
+    char header[64];
     snprintf(header, sizeof(header), "%s  (%d/%d)",
              s_page_labels[page], page + 1, PAGE_COUNT);
     lv_label_set_text(ui_lblCurrentSettings, header);
 
     /* Pre-fill current value */
     char buf[16];
-    snprintf(buf, sizeof(buf), "%.3f", s_page_values[page]);
+    snprintf(buf, sizeof(buf), "%.4f", s_page_values[page]);
     lv_textarea_set_text(ui_txtbSettingsCurrentValue, buf);
+
+    /* Immediately refresh raw reading for the new page's channel */
+    update_raw_reading_label();
 }
 
 /* Read the text-area value and store in current page slot */
@@ -133,31 +155,35 @@ static void store_current_page_value(void)
     }
 }
 
-/* Apply offset/gain values to the sensor calibration module */
+/* Apply 2-point reference values to the sensor calibration module */
 static void apply_calibrations(void)
 {
-    sensor_cal_t vcal, acal;
-    offset_gain_to_cal(s_page_values[PAGE_VOLT_OFFSET],
-                       s_page_values[PAGE_VOLT_GAIN], &vcal);
-    offset_gain_to_cal(s_page_values[PAGE_AMP_OFFSET],
-                       s_page_values[PAGE_AMP_GAIN], &acal);
+    sensor_cal_t vcal = {
+        .raw1    = s_page_values[PAGE_V_RAW_REF_LOW],
+        .actual1 = s_page_values[PAGE_V_REF_LOW],
+        .raw2    = s_page_values[PAGE_V_RAW_REF_HIGH],
+        .actual2 = s_page_values[PAGE_V_REF_HIGH],
+    };
+    sensor_cal_t acal = {
+        .raw1    = s_page_values[PAGE_A_RAW_REF_LOW],
+        .actual1 = s_page_values[PAGE_A_REF_LOW],
+        .raw2    = s_page_values[PAGE_A_RAW_REF_HIGH],
+        .actual2 = s_page_values[PAGE_A_REF_HIGH],
+    };
 
     sensor_set_voltage_cal(&vcal);
     sensor_set_ampere_cal(&acal);
 
-    ESP_LOGI(SETTINGS_TAG, "Calibration applied: V(off=%.3f gain=%.3f) A(off=%.3f gain=%.3f)",
-             s_page_values[PAGE_VOLT_OFFSET], s_page_values[PAGE_VOLT_GAIN],
-             s_page_values[PAGE_AMP_OFFSET],  s_page_values[PAGE_AMP_GAIN]);
+    ESP_LOGI(SETTINGS_TAG, "Calibration applied:");
+    ESP_LOGI(SETTINGS_TAG, "  V: raw(%.4f..%.4f) -> actual(%.4f..%.4f)",
+             vcal.raw1, vcal.raw2, vcal.actual1, vcal.actual2);
+    ESP_LOGI(SETTINGS_TAG, "  A: raw(%.4f..%.4f) -> actual(%.4f..%.4f)",
+             acal.raw1, acal.raw2, acal.actual1, acal.actual2);
 }
 
 /* ------------------------------------------------------------------ */
 /*  Event callbacks                                                    */
 /* ------------------------------------------------------------------ */
-
-/* Intercept BACK / NEXT from the custom keyboard map.
- * We replace the default keyboard VALUE_CHANGED handler so that
- * "BACK"/"NEXT" are not typed into the text area.  All standard keys
- * are forwarded to lv_keyboard_def_event_cb(). */
 static void on_keyboard_value(lv_event_t *e)
 {
     lv_obj_t *kb = lv_event_get_current_target(e);
@@ -184,6 +210,11 @@ static void on_keyboard_value(lv_event_t *e)
     if (strcmp(txt, KB_BTN_SAVE) == 0) {
         store_current_page_value();
         apply_calibrations();
+        /* Stop raw reading timer before leaving */
+        if (s_raw_timer) {
+            lv_timer_delete(s_raw_timer);
+            s_raw_timer = NULL;
+        }
         /* Trigger the existing Save button to navigate to MainMenu */
         lv_obj_send_event(ui_btnSettingsSave, LV_EVENT_CLICKED, NULL);
         return;
@@ -202,12 +233,7 @@ void settings_controller_on_screen_init(void)
     load_current_cal();
     s_current_page = 0;
 
-    /* Keep BACK/NEXT buttons hidden – navigation is now on the keyboard */
-    /* (They were created by SquareLine with HIDDEN flag; leave them.) */
-
-    /* Apply custom number keyboard map with BACK / NEXT keys.
-     * Remove the default VALUE_CHANGED handler so our replacement
-     * can intercept BACK/NEXT without them being typed as text. */
+    /* Apply custom number keyboard map with BACK / NEXT keys. */
     lv_keyboard_set_map(ui_Keyboard2, LV_KEYBOARD_MODE_NUMBER,
                         s_kb_map_cal, s_kb_ctrl_cal);
     lv_keyboard_set_mode(ui_Keyboard2, LV_KEYBOARD_MODE_NUMBER);
@@ -223,11 +249,22 @@ void settings_controller_on_screen_init(void)
     /* Title */
     lv_obj_set_y(ui_Label9, -260);
 
+    /* ---- Create live raw reading label ---- */
+    s_lbl_raw_reading = lv_label_create(ui_Settings);
+    lv_obj_set_width(s_lbl_raw_reading, LV_SIZE_CONTENT);
+    lv_obj_set_height(s_lbl_raw_reading, LV_SIZE_CONTENT);
+    lv_obj_set_x(s_lbl_raw_reading, 0);
+    lv_obj_set_y(s_lbl_raw_reading, -220);
+    lv_obj_set_align(s_lbl_raw_reading, LV_ALIGN_CENTER);
+    lv_label_set_text(s_lbl_raw_reading, "Raw: --");
+    lv_obj_set_style_text_font(s_lbl_raw_reading, &lv_font_montserrat_22, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(s_lbl_raw_reading, lv_color_hex(0x2ECC71), LV_PART_MAIN | LV_STATE_DEFAULT);
+
     /* Container holding label + textarea */
     lv_obj_set_width(ui_SettingsContainer, 500);
     lv_obj_set_height(ui_SettingsContainer, 100);
     lv_obj_set_x(ui_SettingsContainer, 0);
-    lv_obj_set_y(ui_SettingsContainer, -170);
+    lv_obj_set_y(ui_SettingsContainer, -150);
 
     /* Textarea: wider, larger font, dark theme */
     lv_obj_set_width(ui_txtbSettingsCurrentValue, 400);
@@ -253,9 +290,9 @@ void settings_controller_on_screen_init(void)
 
     /* ---- Center the keyboard below the textbox ---- */
     lv_obj_set_width(ui_Keyboard2, 700);
-    lv_obj_set_height(ui_Keyboard2, 290);
+    lv_obj_set_height(ui_Keyboard2, 280);
     lv_obj_set_x(ui_Keyboard2, 0);
-    lv_obj_set_y(ui_Keyboard2, 140);
+    lv_obj_set_y(ui_Keyboard2, 150);
     lv_obj_set_align(ui_Keyboard2, LV_ALIGN_CENTER);
 
     /* General keyboard styling */
@@ -280,6 +317,9 @@ void settings_controller_on_screen_init(void)
     lv_obj_set_style_bg_opa(ui_Keyboard2, 255, LV_PART_ITEMS | LV_STATE_CHECKED);
     lv_obj_set_style_text_color(ui_Keyboard2, lv_color_hex(0xFFFFFF), LV_PART_ITEMS | LV_STATE_CHECKED);
     lv_obj_set_style_text_font(ui_Keyboard2, &lv_font_montserrat_22, LV_PART_ITEMS | LV_STATE_CHECKED);
+
+    /* Start periodic timer to update raw reading (every 500 ms) */
+    s_raw_timer = lv_timer_create(raw_timer_cb, 500, NULL);
 
     /* Show first page */
     show_page(0);

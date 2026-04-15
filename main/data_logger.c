@@ -68,6 +68,12 @@ static void logger_task(void *arg)
         float voltage = 0.0f, ampere = 0.0f;
         sensor_read_voltage(&voltage);
         sensor_read_ampere(&ampere);
+
+        /* Skip logging if voltage or ampere is negative */
+        if (voltage < 0.0f || ampere < 0.0f) {
+            continue;
+        }
+
         float power = voltage * ampere;
 
         /* ---- Read flow rate & RPM ---- */

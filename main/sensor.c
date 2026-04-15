@@ -6,12 +6,34 @@
 #define SENSOR_INFO(fmt, ...)  ESP_LOGI(SENSOR_TAG, fmt, ##__VA_ARGS__)
 #define SENSOR_ERROR(fmt, ...) ESP_LOGE(SENSOR_TAG, fmt, ##__VA_ARGS__)
 
-/* Default calibration: 1:1 (raw value = physical value, i.e. no scaling).
- * Two points on the identity line y = x.                                    */
-static sensor_cal_t s_voltage_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
-                                      .raw2 = 1.0f, .actual2 = 1.0f };
-static sensor_cal_t s_ampere_cal  = { .raw1 = 0.0f, .actual1 = 0.0f,
-                                      .raw2 = 1.0f, .actual2 = 1.0f };
+/* ===================================================================
+ *  MANUAL CALIBRATION REFERENCE POINTS
+ *  Adjust these values based on raw readings from the log output.
+ *
+ *  V_RAW_REF_HIGH  — Raw voltage reading at the HIGH reference point
+ *  V_REF_HIGH      — Actual (known) voltage at the HIGH reference point
+ *  V_RAW_REF_LOW   — Raw voltage reading at the LOW reference point
+ *  V_REF_LOW       — Actual (known) voltage at the LOW reference point
+ *
+ *  A_RAW_REF_HIGH  — Raw current reading at the HIGH reference point
+ *  A_REF_HIGH      — Actual (known) current at the HIGH reference point
+ *  A_RAW_REF_LOW   — Raw current reading at the LOW reference point
+ *  A_REF_LOW       — Actual (known) current at the LOW reference point
+ * =================================================================== */
+#define V_RAW_REF_LOW   0.0f
+#define V_REF_LOW       0.0f
+#define V_RAW_REF_HIGH  33.0f
+#define V_REF_HIGH      32.0f
+
+#define A_RAW_REF_LOW   0.0f
+#define A_REF_LOW       0.0f
+#define A_RAW_REF_HIGH  3.2f
+#define A_REF_HIGH      3.2f
+
+static sensor_cal_t s_voltage_cal = { .raw1 = V_RAW_REF_LOW,  .actual1 = V_REF_LOW,
+                                      .raw2 = V_RAW_REF_HIGH, .actual2 = V_REF_HIGH };
+static sensor_cal_t s_ampere_cal  = { .raw1 = A_RAW_REF_LOW,  .actual1 = A_REF_LOW,
+                                      .raw2 = A_RAW_REF_HIGH, .actual2 = A_REF_HIGH };
 
 /* ------------------------------------------------------------------ */
 /*  2-point linear calibration: actual = slope * raw + offset          */
@@ -73,6 +95,7 @@ esp_err_t sensor_read_voltage(float *voltage)
     }
 
     *voltage = calibrate(&s_voltage_cal, bus_v);
+    SENSOR_INFO("VOLTAGE  raw=%.4f  calibrated=%.4f", bus_v, *voltage);
     return ESP_OK;
 }
 
@@ -89,6 +112,7 @@ esp_err_t sensor_read_ampere(float *ampere)
     }
 
     *ampere = calibrate(&s_ampere_cal, current);
+    SENSOR_INFO("AMPERE   raw=%.4f  calibrated=%.4f", current, *ampere);
     return ESP_OK;
 }
 
@@ -100,4 +124,16 @@ void sensor_get_voltage_cal(sensor_cal_t *cal)
 void sensor_get_ampere_cal(sensor_cal_t *cal)
 {
     if (cal) *cal = s_ampere_cal;
+}
+
+esp_err_t sensor_read_raw_voltage(float *raw_voltage)
+{
+    if (raw_voltage == NULL) return ESP_ERR_INVALID_ARG;
+    return ina219_read_bus_voltage(raw_voltage);
+}
+
+esp_err_t sensor_read_raw_ampere(float *raw_ampere)
+{
+    if (raw_ampere == NULL) return ESP_ERR_INVALID_ARG;
+    return ina219_read_current(raw_ampere);
 }

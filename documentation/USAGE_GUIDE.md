@@ -42,7 +42,7 @@ At boot, the app initializes hardware in this order:
 4. Initialize display + LVGL port
 5. Turn on LCD backlight (100% brightness)
 6. Initialize extra GPIO (GPIO48 LED, off)
-7. Initialize sensor subsystem (INA219 + default 2-point calibration)
+7. Initialize sensor subsystem (INA219 + default 2-point calibration from `#define` constants)
 8. Initialize pulse controller (flow rate GPIO4, RPM GPIO5)
 9. Initialize DS3231 RTC
 10. Initialize and mount SD card
@@ -67,6 +67,7 @@ If any step fails, the app halts and logs the failing module name in a loop.
 - Flow Rate read from YF-DN50 sensor via hardware pulse counter (GPIO4)
 - RPM read from hall sensor via hardware pulse counter (GPIO5)
 - Power computed as Voltage x Ampere
+- All voltage, ampere, and flow values displayed with 3 decimal places
 - All gauges update every 1 second
 - BACK returns to Main Menu
 - DATA opens Data page
@@ -75,13 +76,17 @@ If any step fails, the app halts and logs the failing module name in a loop.
 
 - Shows a live line chart with 4 series (Voltage, Ampere, Flow Rate, RPM) in a 20-point rolling window
 - Five metric summary labels (Flow Rate, Voltage, Ampere, Power, RPM) and a time label (RTC) update every 1 second
+- All values displayed with 3 decimal places
 - BACK returns to Main Menu
 
 ### Settings
 
-- Flow Rate Calibration label with numeric text box and on-screen numeric keyboard
-- SAVE returns to Main Menu with a 500ms fade animation
-- NEXT and BACK buttons exist but are currently hidden
+- 8-page calibration workflow for voltage and ampere 2-point reference calibration
+- Pages cycle through: V RAW REF LOW, V REF LOW, V RAW REF HIGH, V REF HIGH, A RAW REF LOW, A REF LOW, A RAW REF HIGH, A REF HIGH
+- Live raw sensor reading displayed in green (updates every 500ms) — shows the current raw voltage or ampere value for the channel being calibrated
+- Use BACK/NEXT on the keyboard to navigate between pages
+- SAVE applies calibration immediately (no reboot required) and returns to Main Menu
+- Calibration values reset to `#define` defaults on reboot (not persisted to NVS)
 
 ## 5. How Values Are Updated at Runtime
 
@@ -102,31 +107,41 @@ The `data_logger` module (`main/data_logger.c`) runs a separate FreeRTOS task at
 
 1. Reads the current time from the DS3231 RTC.
 2. Reads all sensor values (voltage, ampere, flow rate, RPM).
-3. Computes Power = Voltage x Ampere.
-4. Logs the row to serial console.
-5. Appends a CSV row to `/sdcard/log.csv` with all values (if SD card is mounted).
-6. Repeats every 1 second.
+3. Skips the cycle entirely if voltage or ampere is negative.
+4. Computes Power = Voltage x Ampere.
+5. Logs the row to serial console.
+6. Appends a CSV row to `/sdcard/log.csv` with all values (if SD card is mounted).
+7. Repeats every 1 second.
 
 The CSV header (`Timestamp,Voltage,Ampere,Power,RPM,Flow`) is written automatically when the file does not exist. Time format: `d-mmm-yyyy h:mm:ss` (e.g. `21-Mar-2026 14:35:07`).
 
 ### Calibration
 
 Voltage and Ampere use 2-point linear calibration defined in `main/sensor.c`.
-Default calibration is set in `system_init()` in `main.c`:
+Default calibration is defined via `#define` constants at the top of `sensor.c`:
 
 ```c
-// Voltage: INA219 bus voltage maps directly (0V->0V, 32V->32V)
-sensor_cal_t voltage_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
-                             .raw2 = 32.0f, .actual2 = 32.0f };
-sensor_set_voltage_cal(&voltage_cal);
+// Voltage calibration reference points
+#define V_RAW_REF_LOW   0.0f    // Raw sensor reading at low point
+#define V_REF_LOW       0.0f    // Actual voltage at low point
+#define V_RAW_REF_HIGH  33.0f   // Raw sensor reading at high point
+#define V_REF_HIGH      32.0f   // Actual voltage at high point
 
-// Ampere: INA219 current register maps directly (0A->0A, 3.2A->3.2A)
-sensor_cal_t ampere_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
-                            .raw2 = 3.2f, .actual2 = 3.2f };
-sensor_set_ampere_cal(&ampere_cal);
+// Ampere calibration reference points
+#define A_RAW_REF_LOW   0.0f    // Raw sensor reading at low point
+#define A_REF_LOW       0.0f    // Actual current at low point
+#define A_RAW_REF_HIGH  3.2f    // Raw sensor reading at high point
+#define A_REF_HIGH      3.2f    // Actual current at high point
 ```
 
-The INA219 reads bus voltage and current directly (via a 0.1 Ω shunt resistor), so the default calibration is 1:1 (identity). Adjust if your hardware requires external scaling.
+Calibration can also be adjusted at runtime via the Settings screen (8-page workflow).
+Raw sensor readings are logged to the serial console every read cycle to assist with calibration.
+
+To calibrate:
+1. Open the Settings screen
+2. Observe the live raw reading displayed in green
+3. Enter the raw reading and the known actual value for both low and high reference points
+4. Press SAVE to apply immediately
 
 ### Flow Rate & RPM
 
@@ -156,7 +171,7 @@ The data logger reads time automatically via `ds3231_get_time()`.
 2. **Add a new application module:** Create `.c` in `main/` and `.h` in `main/include/`. The CMake GLOB picks it up automatically.
 3. **Integrate into UI updates:** Modify `update_values()` in `gauges_controller.c` to read your new sensor and update UI widgets.
 4. **Integrate into data logging:** Modify `logger_task()` in `data_logger.c` to include new data columns.
-5. **Add settings persistence:** Wire the Settings screen buttons to NVS read/write for calibration values.
+5. **Add settings persistence:** Wire NVS read/write to save calibration values across reboots.
 
 ## 7. Troubleshooting
 
@@ -164,5 +179,6 @@ The data logger reads time automatically via `ds3231_get_time()`.
 - **No display/backlight:** Check LDO init, display init, and backlight GPIO31 PWM path.
 - **No touch response:** Check I2C init and GT911 RST/INT pin wiring.
 - **SD card mount failed:** Ensure the card is FAT32 formatted and properly inserted. Check GPIO43/44/39 connections.
-- **No CSV data logged:** Ensure DS3231 RTC is responding (check I2C address 0x68) and SD card is mounted.
-- **Incorrect sensor values:** Adjust 2-point calibration values in `main.c` or INA219 configuration (shunt resistor value, max current) to match your hardware.
+- **No CSV data logged:** Ensure DS3231 RTC is responding (check I2C address 0x68) and SD card is mounted. Also check that voltage and ampere readings are non-negative (negative values skip logging).
+- **Incorrect sensor values:** Adjust 2-point calibration via the Settings screen or edit the `#define` constants in `sensor.c`. Check INA219 configuration (shunt resistor value, max current).
+- **Calibration lost after reboot:** Runtime calibration from the Settings screen does not persist across reboots. Edit the `#define` defaults in `sensor.c` for permanent changes.

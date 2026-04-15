@@ -7,7 +7,8 @@ Real-time water turbine monitoring system built on the **ESP32-P4** with a 9" to
 - **Live Dashboard** — 5 arc gauges (Voltage, Ampere, RPM, Power, Flow Rate) updated every 1 second
 - **Data Charts** — Rolling 20-point line chart with Voltage, Ampere, Flow Rate, and RPM series
 - **Real Sensors** — INA219 current/power monitor for voltage/current, hardware pulse counters for flow and RPM
-- **2-Point Calibration** — Linear calibration for voltage and ampere channels
+- **2-Point Calibration** — Linear calibration for voltage and ampere channels, configurable via Settings screen or `#define` constants
+- **3 Decimal Precision** — Voltage, ampere, and flow values displayed with 3 decimal places on all screens and SD card logs
 - **RTC Clock** — DS3231 real-time clock with battery backup
 - **SD Card Logging** — CSV data logged every 1 second with timestamped rows
 - **Touch UI** — 4 screens (Main Menu, Gauges, Data, Settings) with LVGL 9.2.2
@@ -39,12 +40,14 @@ WaterTurbine/
 ├── main/
 │   ├── main.c                  # App entry point and hardware init
 │   ├── gauges_controller.c     # 1-second UI update task
-│   ├── sensor.c                # INA219 voltage/ampere with calibration
+│   ├── settings_controller.c  # 8-page calibration with live raw display
+│   ├── sensor.c                # INA219 voltage/ampere with 2-point calibration + raw reads
 │   ├── pulse_controller.c      # Flow rate and RPM from PCNT
-│   ├── data_logger.c           # CSV logging to SD card (1s interval)
+│   ├── data_logger.c           # CSV logging to SD card (1s interval, skips negative values)
 │   ├── include/
 │   │   ├── main.h
 │   │   ├── gauges_controller.h
+│   │   ├── settings_controller.h
 │   │   ├── sensor.h
 │   │   ├── pulse_controller.h
 │   │   └── data_logger.h
@@ -108,7 +111,7 @@ The firmware initializes hardware in this order:
 4. LCD display + LVGL port
 5. LCD backlight (100% brightness)
 6. GPIO48 LED (off)
-7. INA219 sensor subsystem + default calibration
+7. INA219 sensor subsystem + default calibration from `#define` constants
 8. Pulse controller (flow=GPIO4, RPM=GPIO5)
 9. DS3231 RTC
 10. SD card mount
@@ -137,21 +140,23 @@ Time,Flow Rate,RPM,Voltage,Ampere,Power
 
 ### Voltage and Ampere (2-Point Linear)
 
-Default calibration is set in `main.c` during startup:
+Default calibration is defined via `#define` constants at the top of `main/sensor.c`:
 
 ```c
-// Voltage: 0V ADC → 0V actual, 4.0V ADC → 30.0V actual
-sensor_cal_t voltage_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
-                             .raw2 = 4.0f, .actual2 = 30.0f };
-sensor_set_voltage_cal(&voltage_cal);
+#define V_RAW_REF_LOW   0.0f    // Raw sensor reading at low point
+#define V_REF_LOW       0.0f    // Actual voltage at low point
+#define V_RAW_REF_HIGH  33.0f   // Raw sensor reading at high point
+#define V_REF_HIGH      32.0f   // Actual voltage at high point
 
-// Ampere: 0V ADC → 0A actual, 4.0V ADC → 20.0A actual
-sensor_cal_t ampere_cal = { .raw1 = 0.0f, .actual1 = 0.0f,
-                            .raw2 = 4.0f, .actual2 = 20.0f };
-sensor_set_ampere_cal(&ampere_cal);
+#define A_RAW_REF_LOW   0.0f
+#define A_REF_LOW       0.0f
+#define A_RAW_REF_HIGH  3.2f
+#define A_REF_HIGH      3.2f
 ```
 
-Adjust the `raw`/`actual` pairs to match your voltage divider and current sensor.
+Calibration can also be adjusted at runtime via the **Settings screen** (8-page workflow with live raw sensor display). Runtime calibration is applied immediately without reboot but does not persist across power cycles.
+
+Raw sensor readings are logged to the serial console every cycle to assist calibration.
 
 ### Flow Rate and RPM
 
@@ -171,10 +176,8 @@ Managed via `idf_component.yml`:
 
 ## Not Yet Implemented
 
-- RTC time display on the UI
+- Calibration persistence across reboots (NVS)
 - CSV log file rotation / size management
-- Calibration and settings persistence (NVS)
-- Settings screen NEXT/BACK workflow
 - Wi-Fi / Bluetooth connectivity
 - OTA firmware updates (partition table ready)
 

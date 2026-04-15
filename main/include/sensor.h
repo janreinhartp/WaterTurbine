@@ -61,5 +61,15 @@ esp_err_t sensor_read_ampere(float *ampere);
 void sensor_get_voltage_cal(sensor_cal_t *cal);
 void sensor_get_ampere_cal(sensor_cal_t *cal);
 
+/**
+ * @brief Read raw (uncalibrated) voltage from INA219.
+ */
+esp_err_t sensor_read_raw_voltage(float *raw_voltage);
+
+/**
+ * @brief Read raw (uncalibrated) current from INA219.
+ */
+esp_err_t sensor_read_raw_ampere(float *raw_ampere);
+
 /*———————————————————————————————————————Variable declaration end——————————————-—————————————————————————*/
 #endif

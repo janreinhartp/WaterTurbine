@@ -16,7 +16,7 @@ Implemented in `main/main.c`:
 - Extra GPIO initialization for an LED output on GPIO48, default state OFF
 - UI initialization by calling `ui_init()`
 - Sensor subsystem initialization (INA219 for voltage and current)
-- Default 2-point calibration applied for voltage and ampere channels
+- Default 2-point calibration defined via `#define` constants in `sensor.c` (used on first boot)
 - Pulse controller initialization (flow rate on GPIO4, RPM on GPIO5)
 - DS3231 RTC initialization over I2C
 - SD card initialization and mount (1-wire SDIO)
@@ -224,21 +224,31 @@ Runtime data behavior:
 
 ### Settings Screen
 
-Implemented in `main/ui/ui_Settings.c`:
+Implemented in `main/ui/ui_Settings.c` and `main/settings_controller.c`:
 
 - Settings title and container
-- Numeric text area
-- Numeric keyboard
-- Buttons:
-  - NEXT
-  - SAVE
-  - BACK
+- Numeric text area with dark theme styling
+- Custom numeric keyboard with integrated BACK / SAVE / NEXT navigation buttons
+- 8-page calibration workflow for 2-point reference calibration:
+  1. V RAW REF LOW — Raw voltage sensor reading at low reference point
+  2. V REF LOW — Actual (known) voltage at low reference point
+  3. V RAW REF HIGH — Raw voltage sensor reading at high reference point
+  4. V REF HIGH — Actual (known) voltage at high reference point
+  5. A RAW REF LOW — Raw current sensor reading at low reference point
+  6. A REF LOW — Actual (known) current at low reference point
+  7. A RAW REF HIGH — Raw current sensor reading at high reference point
+  8. A REF HIGH — Actual (known) current at high reference point
+- Live raw sensor reading displayed on-screen (updates every 500ms), showing the current raw voltage or ampere value depending on which channel is being calibrated
+- BACK navigates to previous calibration page
+- NEXT navigates to next calibration page
+- SAVE applies calibration immediately (no reboot required) and returns to Main Menu
+- Current calibration values are loaded from the sensor module when entering the Settings screen
+- All values displayed with 4 decimal places for precision
 
 Current behavior:
 
-- `SAVE` button has an event handler and returns to Main Menu with a 500ms fade animation.
-- `NEXT` and `BACK` buttons are created but hidden (`LV_OBJ_FLAG_HIDDEN`) and have no event callback attached.
-- No parameter persistence (NVS/file) is implemented yet.
+- Calibration is applied at runtime via `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()`
+- Calibration does not persist across reboots (resets to `#define` defaults in `sensor.c`)
 
 ## 4. Build Integration
 
@@ -261,6 +271,7 @@ Implemented:
 - `gauges_controller_start()` — Creates a FreeRTOS task (`gauges_task`) at priority 2, stack 8192 bytes.
 - `gauges_task()` — Loops every 1000 ms, calling `update_values()`.
 - `update_values()` — Reads real voltage/ampere from the INA219 sensor module (with calibration), reads real flow rate/RPM from pulse counter sensors, computes Power as Voltage x Ampere, and pushes all data to both the Gauges screen (arcs + labels) and the Data screen (chart series + labels).
+- All voltage, ampere, and flow values displayed with 3 decimal places (e.g. `12.345 V`). Power and RPM displayed as whole numbers.
 - `init_data_chart()` — One-time setup that removes all SquareLine demo series (which use small external arrays) and recreates 4 series with LVGL-managed internal arrays:
   - Voltage (red `#F60707`) on primary Y-axis
   - Ampere (blue `#0D06E9`) on primary Y-axis
@@ -284,18 +295,22 @@ Arc gauge percentage ranges:
 Implemented:
 
 - `sensor_init()` — Initializes the INA219 at address 0x40 with default configuration.
-- `sensor_read_voltage()` — Reads INA219 bus voltage, applies 2-point calibration, returns calibrated voltage in volts.
-- `sensor_read_ampere()` — Reads INA219 current register, applies 2-point calibration, returns calibrated current in amps.
-- `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()` — Set 2-point calibration data.
+- `sensor_read_voltage()` — Reads INA219 bus voltage, applies 2-point calibration, returns calibrated voltage in volts. Logs both raw and calibrated values.
+- `sensor_read_ampere()` — Reads INA219 current register, applies 2-point calibration, returns calibrated current in amps. Logs both raw and calibrated values.
+- `sensor_read_raw_voltage()` — Reads uncalibrated INA219 bus voltage (used by settings page for live display).
+- `sensor_read_raw_ampere()` — Reads uncalibrated INA219 current (used by settings page for live display).
+- `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()` — Set 2-point calibration data at runtime.
+- `sensor_get_voltage_cal()` / `sensor_get_ampere_cal()` — Retrieve current calibration data.
 
 2-point calibration:
 
 - Maps two known (raw sensor reading, actual physical value) pairs to a linear function.
 - Formula: `actual = slope * raw + offset` where `slope = (actual2 - actual1) / (raw2 - raw1)`.
-- Default calibration set in `main.c` during startup:
-  - Voltage: 0V → 0V, 32V → 32V (identity — INA219 reads bus voltage directly)
-  - Ampere: 0A → 0A, 3.2A → 3.2A (identity — INA219 computes current from shunt)
-- Calibration values can be adjusted if external scaling is needed.
+- Default calibration defined via `#define` constants at the top of `sensor.c`:
+  - `V_RAW_REF_LOW`, `V_REF_LOW`, `V_RAW_REF_HIGH`, `V_REF_HIGH` — Voltage channel
+  - `A_RAW_REF_LOW`, `A_REF_LOW`, `A_RAW_REF_HIGH`, `A_REF_HIGH` — Ampere channel
+- Calibration can be updated at runtime via the Settings screen (applied immediately, no reboot required).
+- Raw sensor readings are logged every read cycle to assist with calibration.
 
 INA219 default config: 32V bus range, ±320 mV shunt, 12-bit ADC, 0.1 Ω shunt, 3.2A max.
 
@@ -328,18 +343,28 @@ Implemented:
 - Time column format: `d-mmm-yyyy h:mm:ss` (e.g. `21-Mar-2026 14:35:07`), read from DS3231 RTC.
 - All numeric values formatted with 3 decimal places; RPM with 1 decimal place.
 - Reads voltage/ampere from sensor module, flow/RPM from pulse controller, computes Power = Voltage × Ampere.
+- Skips logging entirely if voltage or ampere is negative (prevents invalid data from being recorded).
 - Checks `sd_is_mounted()` before writing to SD card.
 - Also logs each row to serial console via `ESP_LOGI`.
 - Skips row if RTC read fails.
 
-## 9. What Is Not Yet Implemented (Observed Gaps)
+## 9. Settings Controller (`main/settings_controller.c`)
+
+Implemented:
+
+- `settings_controller_on_screen_init()` — Called at end of `ui_Settings_screen_init()` to set up calibration pages, keyboard, and event handlers.
+- 8-page calibration workflow editing the 2-point reference values for voltage and ampere channels.
+- Custom keyboard map replaces LVGL default: numbers + BACK / SAVE / NEXT buttons.
+- Live raw sensor reading label (green text, updates every 500ms via LVGL timer) shows current raw voltage or ampere depending on the active page.
+- `apply_calibrations()` — Builds `sensor_cal_t` structs from page values and applies them immediately via `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()`.
+- `load_current_cal()` — Reads current calibration from sensor module when entering the screen.
+- Timer is cleaned up when leaving the Settings screen (SAVE navigates to Main Menu).
+
+## 10. What Is Not Yet Implemented (Observed Gaps)
 
 - CSV log file management (rotation, size limits, deletion)
 - Flow factor / RPM PPR persistence (NVS) — currently hardcoded defaults
-- Calibration persistence (NVS) — calibration is currently hardcoded at startup
-- Settings UI wired to calibration values
-- Settings workflow logic for NEXT/BACK and multi-setting pages
-- Settings value validation and persistence (NVS)
+- Calibration persistence across reboots (NVS) — calibration resets to `#define` defaults on reboot
 - UI-triggered control of GPIO48 LED
 - Wi-Fi / Bluetooth connectivity
 - OTA update flow (partition table supports it, firmware does not yet)
