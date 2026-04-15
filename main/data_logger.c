@@ -15,10 +15,15 @@
 #define LOGGER_TAG        "DATA_LOG"
 #define LOGGER_PERIOD_MS  (1 * 1000)
 #define LOGGER_STACK_SIZE 8192
-#define LOG_FILE_PATH     SD_MOUNT_POINT "/log.csv"
 #define LOG_CSV_HEADER    "Timestamp,Voltage,Ampere,Power,RPM,Flow\n"
 
 static TaskHandle_t s_logger_task = NULL;
+
+/* Track current log date so we detect day changes */
+static uint8_t s_log_day   = 0;
+static uint8_t s_log_month = 0;
+static uint16_t s_log_year = 0;
+static char s_log_path[64] = {0};
 
 static const char *s_month_abbr[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -37,19 +42,38 @@ static void format_time(const ds3231_time_t *t, char *buf, size_t len)
              t->hours, t->minutes, t->seconds);
 }
 
+/* Build the log file path for a given date: /sdcard/2026-04-15-log.csv */
+static void build_log_path(const ds3231_time_t *t)
+{
+    snprintf(s_log_path, sizeof(s_log_path),
+             SD_MOUNT_POINT "/%04u-%02u-%02u-log.csv",
+             t->year, t->month, t->date);
+    s_log_day   = t->date;
+    s_log_month = t->month;
+    s_log_year  = t->year;
+}
+
+/* Check if the date changed and rotate to a new file if needed */
+static void ensure_log_file(const ds3231_time_t *t)
+{
+    if (t->date != s_log_day || t->month != s_log_month || t->year != s_log_year) {
+        build_log_path(t);
+        ESP_LOGI(LOGGER_TAG, "Log file rotated to %s", s_log_path);
+    }
+
+    if (sd_is_mounted() && !sd_file_exists(s_log_path)) {
+        esp_err_t err = sd_append_string(s_log_path, LOG_CSV_HEADER);
+        if (err != ESP_OK) {
+            ESP_LOGE(LOGGER_TAG, "Failed to create %s", s_log_path);
+        } else {
+            ESP_LOGI(LOGGER_TAG, "Created %s with header", s_log_path);
+        }
+    }
+}
+
 static void logger_task(void *arg)
 {
     (void)arg;
-
-    /* Verify the SD card is accessible by writing the CSV header */
-    if (sd_is_mounted() && !sd_file_exists(LOG_FILE_PATH)) {
-        esp_err_t hdr_err = sd_append_string(LOG_FILE_PATH, LOG_CSV_HEADER);
-        if (hdr_err != ESP_OK) {
-            ESP_LOGE(LOGGER_TAG, "Failed to create %s – is the SD card mounted?", LOG_FILE_PATH);
-        } else {
-            ESP_LOGI(LOGGER_TAG, "Created %s with header", LOG_FILE_PATH);
-        }
-    }
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(LOGGER_PERIOD_MS));
@@ -60,6 +84,9 @@ static void logger_task(void *arg)
             ESP_LOGE(LOGGER_TAG, "RTC read failed, skipping cycle");
             continue;
         }
+
+        /* ---- Ensure correct date-based log file ---- */
+        ensure_log_file(&now);
 
         char time_str[32];
         format_time(&now, time_str, sizeof(time_str));
@@ -90,7 +117,7 @@ static void logger_task(void *arg)
             snprintf(csv_line, sizeof(csv_line),
                      "%s,%.3f,%.3f,%.3f,%.1f,%.3f\n",
                      time_str, voltage, ampere, power, rpm, flow);
-            if (sd_append_string(LOG_FILE_PATH, csv_line) != ESP_OK) {
+            if (sd_append_string(s_log_path, csv_line) != ESP_OK) {
                 ESP_LOGE(LOGGER_TAG, "SD write failed");
             }
         }

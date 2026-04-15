@@ -71,5 +71,15 @@ esp_err_t sensor_read_raw_voltage(float *raw_voltage);
  */
 esp_err_t sensor_read_raw_ampere(float *raw_ampere);
 
+/**
+ * @brief Save current calibration to NVS flash.
+ */
+esp_err_t sensor_save_cal_nvs(void);
+
+/**
+ * @brief Load calibration from NVS flash (overwrites #define defaults).
+ */
+esp_err_t sensor_load_cal_nvs(void);
+
 /*———————————————————————————————————————Variable declaration end——————————————-—————————————————————————*/
 #endif

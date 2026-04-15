@@ -42,13 +42,14 @@ At boot, the app initializes hardware in this order:
 4. Initialize display + LVGL port
 5. Turn on LCD backlight (100% brightness)
 6. Initialize extra GPIO (GPIO48 LED, off)
-7. Initialize sensor subsystem (INA219 + default 2-point calibration from `#define` constants)
-8. Initialize pulse controller (flow rate GPIO4, RPM GPIO5)
-9. Initialize DS3231 RTC
-10. Initialize and mount SD card
-11. Initialize UI screens and load Main Menu
-12. Start gauges controller task (1-second update loop)
-13. Start data logger task (1-second CSV logging)
+7. Initialize NVS flash (calibration persistence)
+8. Initialize sensor subsystem (INA219 + load saved calibration from NVS, falls back to `#define` defaults)
+9. Initialize pulse controller (flow rate GPIO4, RPM GPIO5)
+10. Initialize DS3231 RTC
+11. Initialize and mount SD card
+12. Initialize UI screens and load Main Menu
+13. Start gauges controller task (1-second update loop)
+14. Start data logger task (1-second CSV logging with daily file rotation)
 
 If any step fails, the app halts and logs the failing module name in a loop.
 
@@ -85,8 +86,8 @@ If any step fails, the app halts and logs the failing module name in a loop.
 - Pages cycle through: V RAW REF LOW, V REF LOW, V RAW REF HIGH, V REF HIGH, A RAW REF LOW, A REF LOW, A RAW REF HIGH, A REF HIGH
 - Live raw sensor reading displayed in green (updates every 500ms) — shows the current raw voltage or ampere value for the channel being calibrated
 - Use BACK/NEXT on the keyboard to navigate between pages
-- SAVE applies calibration immediately (no reboot required) and returns to Main Menu
-- Calibration values reset to `#define` defaults on reboot (not persisted to NVS)
+- SAVE applies calibration immediately (no reboot required), persists to NVS flash, and returns to Main Menu
+- Saved calibration is restored automatically on reboot (falls back to `#define` defaults if no saved data)
 
 ## 5. How Values Are Updated at Runtime
 
@@ -110,10 +111,10 @@ The `data_logger` module (`main/data_logger.c`) runs a separate FreeRTOS task at
 3. Skips the cycle entirely if voltage or ampere is negative.
 4. Computes Power = Voltage x Ampere.
 5. Logs the row to serial console.
-6. Appends a CSV row to `/sdcard/log.csv` with all values (if SD card is mounted).
+6. Appends a CSV row to the current day's log file (if SD card is mounted).
 7. Repeats every 1 second.
 
-The CSV header (`Timestamp,Voltage,Ampere,Power,RPM,Flow`) is written automatically when the file does not exist. Time format: `d-mmm-yyyy h:mm:ss` (e.g. `21-Mar-2026 14:35:07`).
+Log files are rotated daily with the naming pattern `YYYY-MM-DD-log.csv` (e.g. `/sdcard/2026-04-15-log.csv`). A new file is created automatically at midnight based on the DS3231 RTC date. The CSV header (`Timestamp,Voltage,Ampere,Power,RPM,Flow`) is written automatically when a new file is created. Time format: `d-mmm-yyyy h:mm:ss` (e.g. `21-Mar-2026 14:35:07`).
 
 ### Calibration
 
@@ -171,7 +172,7 @@ The data logger reads time automatically via `ds3231_get_time()`.
 2. **Add a new application module:** Create `.c` in `main/` and `.h` in `main/include/`. The CMake GLOB picks it up automatically.
 3. **Integrate into UI updates:** Modify `update_values()` in `gauges_controller.c` to read your new sensor and update UI widgets.
 4. **Integrate into data logging:** Modify `logger_task()` in `data_logger.c` to include new data columns.
-5. **Add settings persistence:** Wire NVS read/write to save calibration values across reboots.
+5. **Add new NVS settings:** Calibration persistence is implemented — extend the NVS pattern for additional settings (e.g. flow factor, RPM PPR).
 
 ## 7. Troubleshooting
 
@@ -181,4 +182,4 @@ The data logger reads time automatically via `ds3231_get_time()`.
 - **SD card mount failed:** Ensure the card is FAT32 formatted and properly inserted. Check GPIO43/44/39 connections.
 - **No CSV data logged:** Ensure DS3231 RTC is responding (check I2C address 0x68) and SD card is mounted. Also check that voltage and ampere readings are non-negative (negative values skip logging).
 - **Incorrect sensor values:** Adjust 2-point calibration via the Settings screen or edit the `#define` constants in `sensor.c`. Check INA219 configuration (shunt resistor value, max current).
-- **Calibration lost after reboot:** Runtime calibration from the Settings screen does not persist across reboots. Edit the `#define` defaults in `sensor.c` for permanent changes.
+- **Calibration lost after reboot:** Calibration is saved to NVS when pressing SAVE in Settings. If NVS is corrupted, it is erased and re-initialized automatically — calibration will fall back to `#define` defaults in `sensor.c`.

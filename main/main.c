@@ -2,6 +2,7 @@
 #include "main.h"
 #include "ui.h"
 #include "gauges_controller.h"
+#include "nvs_flash.h"
 #include <string.h>
 
 /* LDO channel handle */
@@ -78,10 +79,21 @@ static void system_init(void) {
     gpio_extra_set_level(false);  // Initially turn off LED
     MAIN_INFO("LED initialized to OFF state");
 
-    // 7. Initialize sensor subsystem (INA219 for voltage & current)
+    // 7. Initialize NVS flash (needed for calibration persistence)
+    MAIN_INFO("Initializing NVS flash...");
+    err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase();
+        err = nvs_flash_init();
+    }
+    if (err != ESP_OK) append_startup_error("NVS", err);
+    MAIN_INFO("NVS flash init success");
+
+    // 8. Initialize sensor subsystem (INA219 for voltage & current)
     MAIN_INFO("Initializing sensor subsystem...");
     err = sensor_init();
     if (err != ESP_OK) append_startup_error("Sensor", err);
+    sensor_load_cal_nvs();  // Restore saved calibration (falls back to #define defaults)
     MAIN_INFO("Sensor subsystem init success");
 
     // 8. Initialize pulse-based sensors (flow rate + RPM)

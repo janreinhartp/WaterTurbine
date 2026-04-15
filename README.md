@@ -10,7 +10,8 @@ Real-time water turbine monitoring system built on the **ESP32-P4** with a 9" to
 - **2-Point Calibration** — Linear calibration for voltage and ampere channels, configurable via Settings screen or `#define` constants
 - **3 Decimal Precision** — Voltage, ampere, and flow values displayed with 3 decimal places on all screens and SD card logs
 - **RTC Clock** — DS3231 real-time clock with battery backup
-- **SD Card Logging** — CSV data logged every 1 second with timestamped rows
+- **SD Card Logging** — CSV data logged every 1 second with daily file rotation (`YYYY-MM-DD-log.csv`)
+- **NVS Persistence** — Calibration values saved to flash and restored on reboot
 - **Touch UI** — 4 screens (Main Menu, Gauges, Data, Settings) with LVGL 9.2.2
 
 ## Hardware
@@ -43,7 +44,7 @@ WaterTurbine/
 │   ├── settings_controller.c  # 8-page calibration with live raw display
 │   ├── sensor.c                # INA219 voltage/ampere with 2-point calibration + raw reads
 │   ├── pulse_controller.c      # Flow rate and RPM from PCNT
-│   ├── data_logger.c           # CSV logging to SD card (1s interval, skips negative values)
+│   ├── data_logger.c           # CSV logging to SD card (1s interval, daily file rotation)
 │   ├── include/
 │   │   ├── main.h
 │   │   ├── gauges_controller.h
@@ -111,29 +112,39 @@ The firmware initializes hardware in this order:
 4. LCD display + LVGL port
 5. LCD backlight (100% brightness)
 6. GPIO48 LED (off)
-7. INA219 sensor subsystem + default calibration from `#define` constants
-8. Pulse controller (flow=GPIO4, RPM=GPIO5)
-9. DS3231 RTC
-10. SD card mount
-11. UI initialization
-12. Gauges controller task (1-second loop)
-13. Data logger task (1-second CSV logging)
+7. NVS flash (calibration persistence)
+8. INA219 sensor subsystem + load saved calibration from NVS (falls back to `#define` defaults)
+9. Pulse controller (flow=GPIO4, RPM=GPIO5)
+10. DS3231 RTC
+11. SD card mount
+12. UI initialization
+13. Gauges controller task (1-second loop)
+14. Data logger task (1-second CSV logging with daily file rotation)
 
 Critical init failures halt startup. Non-critical failures are collected and displayed on the Main Menu.
 
 ## CSV Data Logging
 
-The data logger writes to `/sdcard/datalog.csv` every 60 seconds:
+The data logger creates a new CSV file per day with the naming pattern `YYYY-MM-DD-log.csv`:
 
-```csv
-Time,Flow Rate,RPM,Voltage,Ampere,Power
-21-Mar-2026 14-35,5.300,850.000,24.500,5.100,124.950
-21-Mar-2026 14-36,5.280,848.000,24.480,5.090,124.604
+```
+/sdcard/2026-04-15-log.csv
+/sdcard/2026-04-16-log.csv
 ```
 
-- **Time format:** `d-mmm-yyyy h-mm`
-- **All values:** 3 decimal places
+Example content:
+
+```csv
+Timestamp,Voltage,Ampere,Power,RPM,Flow
+15-Apr-2026 14:35:07,24.500,5.100,124.950,850.0,5.300
+15-Apr-2026 14:35:08,24.480,5.090,124.604,848.0,5.280
+```
+
+- **File rotation:** Automatically creates a new file at midnight (based on DS3231 RTC date)
+- **Time format:** `d-mmm-yyyy h:mm:ss`
+- **All values:** 3 decimal places (RPM: 1 decimal)
 - **Power:** computed as Voltage × Ampere
+- **Negative filtering:** Skips logging if voltage or ampere is negative
 - Header row is written automatically when a new file is created
 
 ## Calibration
@@ -154,7 +165,7 @@ Default calibration is defined via `#define` constants at the top of `main/senso
 #define A_REF_HIGH      3.2f
 ```
 
-Calibration can also be adjusted at runtime via the **Settings screen** (8-page workflow with live raw sensor display). Runtime calibration is applied immediately without reboot but does not persist across power cycles.
+Calibration can also be adjusted at runtime via the **Settings screen** (8-page workflow with live raw sensor display). Pressing SAVE applies calibration immediately and persists it to NVS flash — values survive reboots. On boot, saved NVS calibration is loaded automatically (falling back to `#define` defaults if no saved data exists).
 
 Raw sensor readings are logged to the serial console every cycle to assist calibration.
 
@@ -176,8 +187,6 @@ Managed via `idf_component.yml`:
 
 ## Not Yet Implemented
 
-- Calibration persistence across reboots (NVS)
-- CSV log file rotation / size management
 - Wi-Fi / Bluetooth connectivity
 - OTA firmware updates (partition table ready)
 

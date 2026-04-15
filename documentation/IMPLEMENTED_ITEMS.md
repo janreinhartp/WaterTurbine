@@ -16,7 +16,9 @@ Implemented in `main/main.c`:
 - Extra GPIO initialization for an LED output on GPIO48, default state OFF
 - UI initialization by calling `ui_init()`
 - Sensor subsystem initialization (INA219 for voltage and current)
+- NVS flash initialization (with erase-on-corruption recovery)
 - Default 2-point calibration defined via `#define` constants in `sensor.c` (used on first boot)
+- Saved calibration loaded from NVS on boot (falls back to `#define` defaults if not found)
 - Pulse controller initialization (flow rate on GPIO4, RPM on GPIO5)
 - DS3231 RTC initialization over I2C
 - SD card initialization and mount (1-wire SDIO)
@@ -248,7 +250,8 @@ Implemented in `main/ui/ui_Settings.c` and `main/settings_controller.c`:
 Current behavior:
 
 - Calibration is applied at runtime via `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()`
-- Calibration does not persist across reboots (resets to `#define` defaults in `sensor.c`)
+- Calibration is saved to NVS flash on SAVE via `sensor_save_cal_nvs()`
+- Saved calibration is loaded on boot via `sensor_load_cal_nvs()` (falls back to `#define` defaults)
 
 ## 4. Build Integration
 
@@ -338,8 +341,9 @@ Sensors:
 Implemented:
 
 - `data_logger_start()` — Creates a FreeRTOS task (`data_logger`) at priority 5, stack 8192 bytes, pinned to core 1.
-- Logs to `/sdcard/log.csv` every 1 second.
-- Writes CSV header automatically on first run (if SD is mounted): `Timestamp,Voltage,Ampere,Power,RPM,Flow`
+- Daily file rotation: logs to `/sdcard/YYYY-MM-DD-log.csv` (e.g. `2026-04-15-log.csv`).
+- Automatically creates a new file at midnight based on DS3231 RTC date.
+- Writes CSV header automatically when a new day's file is created: `Timestamp,Voltage,Ampere,Power,RPM,Flow`
 - Time column format: `d-mmm-yyyy h:mm:ss` (e.g. `21-Mar-2026 14:35:07`), read from DS3231 RTC.
 - All numeric values formatted with 3 decimal places; RPM with 1 decimal place.
 - Reads voltage/ampere from sensor module, flow/RPM from pulse controller, computes Power = Voltage × Ampere.
@@ -356,15 +360,13 @@ Implemented:
 - 8-page calibration workflow editing the 2-point reference values for voltage and ampere channels.
 - Custom keyboard map replaces LVGL default: numbers + BACK / SAVE / NEXT buttons.
 - Live raw sensor reading label (green text, updates every 500ms via LVGL timer) shows current raw voltage or ampere depending on the active page.
-- `apply_calibrations()` — Builds `sensor_cal_t` structs from page values and applies them immediately via `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()`.
+- `apply_calibrations()` — Builds `sensor_cal_t` structs from page values, applies them immediately via `sensor_set_voltage_cal()` / `sensor_set_ampere_cal()`, and saves to NVS via `sensor_save_cal_nvs()`.
 - `load_current_cal()` — Reads current calibration from sensor module when entering the screen.
 - Timer is cleaned up when leaving the Settings screen (SAVE navigates to Main Menu).
 
 ## 10. What Is Not Yet Implemented (Observed Gaps)
 
-- CSV log file management (rotation, size limits, deletion)
 - Flow factor / RPM PPR persistence (NVS) — currently hardcoded defaults
-- Calibration persistence across reboots (NVS) — calibration resets to `#define` defaults on reboot
 - UI-triggered control of GPIO48 LED
 - Wi-Fi / Bluetooth connectivity
 - OTA update flow (partition table supports it, firmware does not yet)

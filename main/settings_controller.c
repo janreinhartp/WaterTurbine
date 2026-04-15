@@ -173,8 +173,9 @@ static void apply_calibrations(void)
 
     sensor_set_voltage_cal(&vcal);
     sensor_set_ampere_cal(&acal);
+    sensor_save_cal_nvs();
 
-    ESP_LOGI(SETTINGS_TAG, "Calibration applied:");
+    ESP_LOGI(SETTINGS_TAG, "Calibration applied and saved to NVS:");
     ESP_LOGI(SETTINGS_TAG, "  V: raw(%.4f..%.4f) -> actual(%.4f..%.4f)",
              vcal.raw1, vcal.raw2, vcal.actual1, vcal.actual2);
     ESP_LOGI(SETTINGS_TAG, "  A: raw(%.4f..%.4f) -> actual(%.4f..%.4f)",
