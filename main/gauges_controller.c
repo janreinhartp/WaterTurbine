@@ -54,23 +54,48 @@ static void init_data_chart(void)
     lv_chart_set_point_count(ui_Chart1, CHART_POINT_COUNT);
     lv_chart_set_update_mode(ui_Chart1, LV_CHART_UPDATE_MODE_SHIFT);
 
-    /* Re-add series: Voltage(red), Ampere(blue), Flow(yellow), RPM(grey) */
+    /* Re-add series for Chart1: Voltage(red/prim), Ampere(blue/prim), Power(purple/sec) */
     lv_chart_add_series(ui_Chart1, lv_color_hex(0xF60707),
                         LV_CHART_AXIS_PRIMARY_Y);
     lv_chart_add_series(ui_Chart1, lv_color_hex(0x0D06E9),
                         LV_CHART_AXIS_PRIMARY_Y);
-    lv_chart_add_series(ui_Chart1, lv_color_hex(0xF3E913),
-                        LV_CHART_AXIS_SECONDARY_Y);
-    lv_chart_add_series(ui_Chart1, lv_color_hex(0x808080),
+    lv_chart_add_series(ui_Chart1, lv_color_hex(0x9B59B6),
                         LV_CHART_AXIS_SECONDARY_Y);
 
-    /* ---------- Style the chart itself ---------- */
+    /* Style the series lines */
+    lv_obj_set_style_line_width(ui_Chart1, 5, LV_PART_ITEMS | LV_STATE_DEFAULT);
+    lv_obj_set_style_line_rounded(ui_Chart1, true, LV_PART_ITEMS | LV_STATE_DEFAULT);
+
+    /* ---------- Style Chart1 ---------- */
     lv_obj_set_style_bg_color(ui_Chart1, lv_color_hex(0x1A1A2E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_Chart1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_Chart1, lv_color_hex(0x2D2D44), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(ui_Chart1, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(ui_Chart1, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_line_color(ui_Chart1, lv_color_hex(0x2D2D44), LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    /* ---------- Init Chart2: Flow(yellow/prim), RPM(grey/sec) ---------- */
+    if (ui_Chart2 != NULL) {
+        lv_chart_series_t *ser2;
+        while ((ser2 = lv_chart_get_series_next(ui_Chart2, NULL)) != NULL) {
+            lv_chart_remove_series(ui_Chart2, ser2);
+        }
+        lv_chart_set_point_count(ui_Chart2, CHART_POINT_COUNT);
+        lv_chart_set_update_mode(ui_Chart2, LV_CHART_UPDATE_MODE_SHIFT);
+        /* Enable horizontal scrolling so the user can pan back through history */
+        lv_obj_add_flag(ui_Chart2, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_set_scroll_dir(ui_Chart2, LV_DIR_HOR);
+        lv_chart_add_series(ui_Chart2, lv_color_hex(0xF3E913), LV_CHART_AXIS_PRIMARY_Y);
+        lv_chart_add_series(ui_Chart2, lv_color_hex(0x808080), LV_CHART_AXIS_SECONDARY_Y);
+        lv_obj_set_style_line_width(ui_Chart2, 5, LV_PART_ITEMS | LV_STATE_DEFAULT);
+        lv_obj_set_style_line_rounded(ui_Chart2, true, LV_PART_ITEMS | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(ui_Chart2, lv_color_hex(0x1A1A2E), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_opa(ui_Chart2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_border_color(ui_Chart2, lv_color_hex(0x2D2D44), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_border_width(ui_Chart2, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_radius(ui_Chart2, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_line_color(ui_Chart2, lv_color_hex(0x2D2D44), LV_PART_MAIN | LV_STATE_DEFAULT);
+    }
 
     /* ---------- Style right-side data cards ---------- */
     /* Helper macro: style a data card container + its labels */
@@ -170,7 +195,7 @@ static void init_data_chart(void)
 typedef struct {
     uint32_t voltage_milli;
     uint32_t ampere_milli;
-    uint32_t power_w;
+    uint32_t power_milli;
     uint32_t flow_milli;
     uint32_t rpm;
     uint8_t  time_h, time_m, time_s;
@@ -198,7 +223,7 @@ static void read_sensors(sensor_snapshot_t *snap)
 
     snap->voltage_milli = (uint32_t)(voltage_f * 1000.0f + 0.5f);
     snap->ampere_milli  = (uint32_t)(ampere_f  * 1000.0f + 0.5f);
-    snap->power_w        = (uint32_t)(voltage_f * ampere_f + 0.5f);
+    snap->power_milli   = (uint32_t)(voltage_f * ampere_f * 1000.0f + 0.5f);
 
     /* ---- Read real sensors for flow rate and RPM ---- */
     float flow_f = 0.0f;
@@ -230,7 +255,7 @@ static void update_ui(const sensor_snapshot_t *snap)
 {
     uint32_t voltage_milli = snap->voltage_milli;
     uint32_t ampere_milli  = snap->ampere_milli;
-    uint32_t power_w        = snap->power_w;
+    uint32_t power_milli   = snap->power_milli;
     uint32_t flow_milli    = snap->flow_milli;
     uint32_t rpm            = snap->rpm;
 
@@ -253,8 +278,9 @@ static void update_ui(const sensor_snapshot_t *snap)
     }
 
     if (ui_gPower && ui_gPowerValue) {
-        lv_arc_set_value(ui_gPower, to_percent_u32(power_w, 0, 500));
-        lv_label_set_text_fmt(ui_gPowerValue, "%lu W", power_w);
+        lv_arc_set_value(ui_gPower, to_percent_u32(power_milli, 0, 500000));
+        lv_label_set_text_fmt(ui_gPowerValue, "%lu.%03lu W",
+                              power_milli / 1000, power_milli % 1000);
     }
 
     if (ui_gWaterFlow && ui_gWaterFlowValue) {
@@ -277,7 +303,8 @@ static void update_ui(const sensor_snapshot_t *snap)
                               ampere_milli / 1000, ampere_milli % 1000);
     }
     if (ui_lblPowerValue) {
-        lv_label_set_text_fmt(ui_lblPowerValue, "%lu W", power_w);
+        lv_label_set_text_fmt(ui_lblPowerValue, "%lu.%03lu W",
+                              power_milli / 1000, power_milli % 1000);
     }
     if (ui_lblRpmValue) {
         lv_label_set_text_fmt(ui_lblRpmValue, "%lu RPM", rpm);
@@ -297,19 +324,68 @@ static void update_ui(const sensor_snapshot_t *snap)
                               snap->time_h, snap->time_m, snap->time_s);
     }
 
-    /* -------- Data screen chart (Voltage, Ampere, Flow, RPM) -------- */
+    /* -------- Data screen Chart1 (Voltage, Ampere, Power) -------- */
     init_data_chart();
     if (s_chart_ready && ui_Chart1) {
-        /* Series order from UI: 1=Voltage(red), 2=Ampere(blue), 3=Flow(yellow), 4=RPM(grey) */
+        /* Rolling max: expands immediately on a new peak, decays slowly (~30 updates
+         * to halve) so the range stays stable as values fall. */
+        static uint32_t s_c1_prim_max = 100;
+        static uint32_t s_c1_sec_max  = 10;
+
+        uint32_t prim_val = voltage_milli > ampere_milli ? voltage_milli : ampere_milli;
+        if (prim_val > s_c1_prim_max) s_c1_prim_max = prim_val;
+        else if (s_c1_prim_max > 100) s_c1_prim_max -= s_c1_prim_max / 30 + 1;
+        if (s_c1_prim_max < 100) s_c1_prim_max = 100;
+
+        if (power_milli > s_c1_sec_max) s_c1_sec_max = power_milli;
+        else if (s_c1_sec_max > 10) s_c1_sec_max -= s_c1_sec_max / 30 + 1;
+        if (s_c1_sec_max < 10) s_c1_sec_max = 10;
+
+        int32_t c1_prim_top = (int32_t)(s_c1_prim_max * 5 / 4); /* 25% headroom */
+        int32_t c1_sec_top  = (int32_t)(s_c1_sec_max  * 5 / 4);
+
+        lv_chart_set_range(ui_Chart1, LV_CHART_AXIS_PRIMARY_Y,   0, c1_prim_top);
+        lv_chart_set_range(ui_Chart1, LV_CHART_AXIS_SECONDARY_Y, 0, c1_sec_top);
+        /* Keep scale label widgets in sync with the actual chart range */
+        lv_scale_set_range(ui_Chart1_Yaxis1, 0, c1_prim_top);
+        lv_scale_set_range(ui_Chart1_Yaxis2, 0, c1_sec_top);
+
         lv_chart_series_t *sv = lv_chart_get_series_next(ui_Chart1, NULL);
         lv_chart_series_t *sa = sv ? lv_chart_get_series_next(ui_Chart1, sv) : NULL;
-        lv_chart_series_t *sf = sa ? lv_chart_get_series_next(ui_Chart1, sa) : NULL;
-        lv_chart_series_t *sr = sf ? lv_chart_get_series_next(ui_Chart1, sf) : NULL;
-        if (sv && sa && sf && sr) {
-            lv_chart_set_next_value(ui_Chart1, sv, (int32_t)(voltage_milli / 1000));
-            lv_chart_set_next_value(ui_Chart1, sa, (int32_t)(ampere_milli / 1000));
-            lv_chart_set_next_value(ui_Chart1, sf, (int32_t)(flow_milli / 1000));
-            lv_chart_set_next_value(ui_Chart1, sr, (int32_t)(rpm / 100));
+        lv_chart_series_t *sp = sa ? lv_chart_get_series_next(ui_Chart1, sa) : NULL;
+        if (sv && sa && sp) {
+            lv_chart_set_next_value(ui_Chart1, sv, (int32_t)voltage_milli);
+            lv_chart_set_next_value(ui_Chart1, sa, (int32_t)ampere_milli);
+            lv_chart_set_next_value(ui_Chart1, sp, (int32_t)power_milli);
+        }
+    }
+
+    /* -------- Data screen Chart2 (Flow, RPM) -------- */
+    if (s_chart_ready && ui_Chart2) {
+        static uint32_t s_c2_prim_max = 100;
+        static uint32_t s_c2_sec_max  = 10;
+
+        if (flow_milli > s_c2_prim_max) s_c2_prim_max = flow_milli;
+        else if (s_c2_prim_max > 100) s_c2_prim_max -= s_c2_prim_max / 30 + 1;
+        if (s_c2_prim_max < 100) s_c2_prim_max = 100;
+
+        if (rpm > s_c2_sec_max) s_c2_sec_max = rpm;
+        else if (s_c2_sec_max > 10) s_c2_sec_max -= s_c2_sec_max / 30 + 1;
+        if (s_c2_sec_max < 10) s_c2_sec_max = 10;
+
+        int32_t c2_prim_top = (int32_t)(s_c2_prim_max * 5 / 4);
+        int32_t c2_sec_top  = (int32_t)(s_c2_sec_max  * 5 / 4);
+
+        lv_chart_set_range(ui_Chart2, LV_CHART_AXIS_PRIMARY_Y,   0, c2_prim_top);
+        lv_chart_set_range(ui_Chart2, LV_CHART_AXIS_SECONDARY_Y, 0, c2_sec_top);
+        lv_scale_set_range(ui_Chart2_Yaxis1, 0, c2_prim_top);
+        lv_scale_set_range(ui_Chart2_Yaxis2, 0, c2_sec_top);
+
+        lv_chart_series_t *sf = lv_chart_get_series_next(ui_Chart2, NULL);
+        lv_chart_series_t *sr = sf ? lv_chart_get_series_next(ui_Chart2, sf) : NULL;
+        if (sf && sr) {
+            lv_chart_set_next_value(ui_Chart2, sf, (int32_t)flow_milli);
+            lv_chart_set_next_value(ui_Chart2, sr, (int32_t)rpm);
         }
     }
 }
@@ -354,4 +430,26 @@ esp_err_t gauges_controller_start(void)
 
     ESP_LOGI(GAUGES_CTRL_TAG, "Gauges controller started (period=%d ms)", GAUGES_CTRL_PERIOD_MS);
     return ESP_OK;
+}
+
+/**
+ * @brief Reset chart ready flag to force re-initialization on next Data screen load.
+ * Call this when navigating away from the Data screen to ensure fresh styling
+ * on the next visit.
+ */
+void gauges_controller_reset_chart(void)
+{
+    s_chart_ready = false;
+}
+
+/**
+ * @brief Immediately initialize/refresh the Data page chart styling.
+ * Can be called from screen load event to ensure chart is styled before display.
+ */
+void gauges_controller_refresh_chart(void)
+{
+    if (lvgl_port_lock(200)) {
+        init_data_chart();
+        lvgl_port_unlock();
+    }
 }

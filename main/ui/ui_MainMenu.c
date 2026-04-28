@@ -4,6 +4,7 @@
 // Project name: DataGathering
 
 #include "ui.h"
+#include "gauges_controller.h"
 
 lv_obj_t * uic_lblErrorStartUp;
 lv_obj_t * uic_btnGauges;
@@ -37,7 +38,9 @@ void ui_event_btnData(lv_event_t * e)
     lv_event_code_t event_code = lv_event_get_code(e);
 
     if(event_code == LV_EVENT_CLICKED) {
+        gauges_controller_reset_chart();
         _ui_screen_change(&ui_Data, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, &ui_Data_screen_init);
+        gauges_controller_refresh_chart();
     }
 }
 
